@@ -1,0 +1,1365 @@
+import React, { useState } from "react";
+import { useLocation, Link, useParams } from "react-router-dom";
+
+/**
+ * Interview Report Component
+ *
+ * Modern AI Interview Preparation Dashboard with:
+ * - Left sticky navigation sidebar with responsive controls
+ * - Center dynamic panel for Dashboard, Technical Qs, Behavioral Qs, Skill Gaps, and Roadmap
+ * - Right insights sidebar with circular match score ring, gap distribution, and priorities
+ */
+// Real interview report data from your database session
+const REAL_REPORT = {
+  _id: "6acded7739b77486abc945cb",
+  jobDescription:
+    "**Job Title:** React.js Developer Intern\r\n\r\n**Job Description:**\r\n\r\nWe are looking for a motivated React.js Developer Intern with a basic understanding of frontend development. The candidate should have knowledge of HTML, CSS, JavaScript, React.js, and responsive web design.\r\n\r\n**Responsibilities:**\r\n\r\n* Develop responsive and user-friendly web applications using React.js.\r\n* Create reusable components and manage application state.\r\n* Integrate REST APIs and handle asynchronous data.\r\n* Use Git and GitHub for version control.\r\n* Debug code and improve application performance.\r\n* Collaborate with team members to develop and maintain projects.\r\n\r\n**Required Skills:**\r\n\r\n* HTML5, CSS3, and JavaScript (ES6+).\r\n* React.js, components, props, hooks, and state management.\r\n* Basic knowledge of REST APIs and JSON.\r\n* Familiarity with Git and GitHub.\r\n* Understanding of responsive design and Tailwind CSS.\r\n* Basic knowledge of Node.js and MongoDB is a plus.\r\n\r\n**Eligibility:** Pursuing a B.Tech/B.E. in Computer Science or a related field.\r\n\r\n**Experience:** Fresher or internship-level candidate.\r\n\r\n**Objective:** Gain practical experience in frontend development while contributing to real-world software projects.",
+  resume:
+    "PALAK RANAWAT\nFrontend Developer | React.js | JavaScript | Tailwind CSS | Redux Toolkit\n07803084728 palakranawat9@gmail.com LinkedIn GitHub Protfolio indore, India\nPROFESSIONAL SUMMARY\nMotivated Computer Science Engineering student with hands-on experience in building responsive web applications using HTML, CSS, JavaScript, React.js, and Tailwind CSS. Currently mastering Redux Toolkit and modern frontend development practices. Seeking an internship or entry-level frontend developer role.",
+  selfDescription:
+    "I am a third-year B.Tech Computer Science Engineering student at Sushila Devi Bansal College of Technology, Indore. I am passionate about web development and currently focusing on frontend development using HTML, CSS, JavaScript, React.js, and Tailwind CSS. I am also learning backend development with Node.js, Express.js, and MongoDB to become a full-stack developer.\r\n\r\nI have worked on projects such as a Currency Converter, Password Generator, and a personal portfolio website. These projects have helped me improve my problem-solving skills and understand how to build responsive and user-friendly web applications.\r\n\r\nI am a quick learner, enjoy exploring new technologies, and believe in continuous improvement. My short-term goal is to secure a software development internship where I can apply my skills and gain practical industry experience. My long-term goal is to become a skilled full-stack developer and contribute to real-world projects.",
+  matchScore: 88,
+  technicalQuestions: [
+    {
+      question:
+        "How do you handle asynchronous data fetching and error states in React, and how did you implement this in your Currency Converter project?",
+      intention:
+        "To assess your practical understanding of the useEffect hook, promise handling with async/await, and managing loading and error states in UI.",
+      answer:
+        "In React, asynchronous operations such as fetching data from a REST API are typically handled inside a useEffect hook or via event handlers using async/await. You maintain separate state variables for data, loading status, and errors using useState. In the Currency Converter project, when the user changes a currency or amount, an API call is triggered to fetch the latest exchange rates. During the network request, a loading state is set to true to give user feedback, and try-catch blocks are used to catch errors, updating an error state to display an alert or fallback UI if the fetch fails.",
+    },
+    {
+      question:
+        "What is the difference between props and state in React, and when would you lift state up?",
+      intention:
+        "To test your foundational knowledge of data flow, component re-rendering, and state architecture in React.",
+      answer:
+        "Props (properties) are read-only inputs passed from a parent component to a child component to configure it or pass data down unidirectionally. State is mutable, local data managed within the component that can trigger re-renders when updated. 'Lifting state up' refers to moving state from child components to their closest common ancestor when multiple sibling components need access to or modify the same piece of data, ensuring a single source of truth.",
+    },
+    {
+      question:
+        "Explain the role of the dependency array in the useEffect hook and what happens if it is omitted, empty, or populated with variables.",
+      intention:
+        "To verify your understanding of component lifecycle management and preventing infinite render loops.",
+      answer:
+        "The dependency array dictates when the useEffect callback executes. If omitted, the effect runs after every single render of the component. If an empty array [] is passed, the effect runs only once after the initial render, similar to componentDidMount. If variables are provided in the array [dep1, dep2], the effect executes on mount and then re-runs whenever any of those specified dependencies change their values between renders.",
+    },
+    {
+      question:
+        "How do modern JavaScript ES6+ features such as destructuring, arrow functions, and array methods (map, filter) assist in React development?",
+      intention:
+        "To evaluate your core JavaScript proficiency which forms the foundation of clean, idiomatic React code.",
+      answer:
+        "ES6+ features make React code concise and readable. Destructuring allows for clean extraction of props or state variables (e.g., const { rate } = data). Arrow functions provide concise syntax and retain lexical 'this' binding. Array methods like .map() are essential in React for dynamically transforming lists of data into arrays of JSX elements with unique 'key' attributes, while .filter() is commonly used to remove or filter items from lists immutably before updating state.",
+    },
+    {
+      question:
+        "How does Tailwind CSS facilitate building responsive user interfaces compared to traditional CSS stylesheets?",
+      intention:
+        "To evaluate your hands-on experience with Tailwind CSS responsive design utilities as stated in your resume projects.",
+      answer:
+        "Tailwind CSS uses utility-first classes applied directly within JSX, eliminating context-switching between CSS and markup. For responsive design, Tailwind provides responsive variant prefixes (such as sm:, md:, lg:, and xl:). By applying mobile-first design principles, default classes apply to mobile devices, while prefixed classes adapt the layout, typography, or grid/flex arrangements as viewport breakpoints expand, streamlining multi-screen optimization.",
+    },
+  ],
+  behavioralQuestions: [
+    {
+      question:
+        "Tell me about a specific technical challenge you encountered while building your Password Generator or Currency Converter project and how you solved it.",
+      intention:
+        "To assess your analytical problem-solving skills, debugging approach, and technical resilience when facing hurdles.",
+      answer:
+        "Use the STAR framework (Situation, Task, Action, Result). For example, discuss an issue where generating passwords with specific character constraints caused edge cases, or handling asynchronous API rate-limiting in the Currency Converter. Detail how you isolated the issue using console logs or developer tools, researched documentation, refactored the logic, and verified the fix.",
+    },
+    {
+      question:
+        "As a student pursuing your B.Tech degree, how do you manage your time between academic coursework and self-learning modern web technologies?",
+      intention:
+        "To evaluate your time management, prioritization, dedication, and capacity to handle internship responsibilities alongside your studies.",
+      answer:
+        "Structure your answer by explaining how you schedule dedicated daily blocks for coding outside of lecture hours, use version control and project-based milestones to maintain progress, and prioritize high-impact learning concepts such as React and APIs that complement academic subjects like Data Structures and DBMS.",
+    },
+    {
+      question:
+        "Describe a scenario where you received constructive feedback on your code or project. How did you react and implement the changes?",
+      intention:
+        "To gauge your receptiveness to mentoring, openness to learning, and team adaptability.",
+      answer:
+        "Mention an instance where a mentor, peer, or reviewer suggested improving code readability, component modularity, or UI responsiveness. Explain that you welcomed the feedback objectively, understood the reasoning behind best practices, and refactored the code promptly to improve the project's maintainability.",
+    },
+  ],
+  skillGaps: [
+    {
+      skill: "Practical Redux Toolkit implementation in production projects",
+      severity: "medium",
+    },
+    {
+      skill: "Automated frontend testing (Jest, React Testing Library)",
+      severity: "medium",
+    },
+    {
+      skill: "React performance optimization techniques (React.memo, useCallback, useMemo)",
+      severity: "low",
+    },
+    {
+      skill: "Full-stack integration with Node.js and MongoDB APIs",
+      severity: "low",
+    },
+  ],
+  preparationPlan: [
+    {
+      day: 1,
+      focus: "Core JavaScript and ES6+ Mastery",
+      tasks: [
+        "Review ES6+ features: arrow functions, destructuring, rest/spread operators, and template literals.",
+        "Practice array manipulation using map, filter, reduce, and find.",
+        "Deepen understanding of Promises, async/await, and event loops.",
+      ],
+    },
+    {
+      day: 2,
+      focus: "React Fundamentals and Component Architecture",
+      tasks: [
+        "Revise React component lifecycles, Virtual DOM, and unidirectional data flow.",
+        "Practice building reusable, modular components using props and children.",
+        "Review conditional rendering techniques and proper usage of key props in lists.",
+      ],
+    },
+    {
+      day: 3,
+      focus: "State Management with React Hooks",
+      tasks: [
+        "Master useState and useEffect, paying special attention to dependency arrays and cleanup functions.",
+        "Review useRef, useMemo, and useCallback to understand their specific use cases.",
+        "Write a custom hook to encapsulate reusable logic (e.g., useFetch or useLocalStorage).",
+      ],
+    },
+    {
+      day: 4,
+      focus: "REST API Integration and Error Handling",
+      tasks: [
+        "Review network requests using Fetch API and Axios.",
+        "Practice handling loading, success, and error states gracefully in UI.",
+        "Review your Currency Converter project codebase and optimize its API handling logic.",
+      ],
+    },
+    {
+      day: 5,
+      focus: "Redux Toolkit & Global State Management",
+      tasks: [
+        "Review the fundamentals of Redux Toolkit: configureStore, createSlice, reducers, and actions.",
+        "Practice consuming global state using useSelector and dispatching actions with useDispatch.",
+        "Compare Redux Toolkit with React Context API and be ready to explain when to choose each.",
+      ],
+    },
+    {
+      day: 6,
+      focus: "Tailwind CSS, Responsive Design, and Git Workflow",
+      tasks: [
+        "Practice creating responsive layouts (Flexbox, Grid) with Tailwind breakpoints (sm, md, lg).",
+        "Review Git commands: branching, merging, pull requests, resolving conflicts, and rebasing.",
+        "Prepare clean live demos and GitHub README overviews for your projects.",
+      ],
+    },
+    {
+      day: 7,
+      focus: "Project Deep-Dive and Behavioral Interview Mock",
+      tasks: [
+        "Prepare a 2-minute concise walkthrough of each project on your resume.",
+        "Rehearse answers to behavioral questions using the STAR framework.",
+        "Conduct a mock interview focusing on explaining technical concepts clearly and concisely.",
+      ],
+    },
+  ],
+};
+
+const Interview = (props) => {
+  const location = useLocation();
+  const params = useParams();
+  const routeState = location.state || {};
+
+  // Resolve report data safely from props, React Router location state, or your database report
+  const rawReport =
+    props.report ||
+    props.interviewReport ||
+    props.data ||
+    routeState.report ||
+    routeState.interviewReport ||
+    routeState.data ||
+    REAL_REPORT;
+
+  // Unpack in case of nested { interviewReport: { ... } } structure
+  const report = rawReport?.interviewReport || rawReport;
+
+  // Active navigation tab: 'dashboard' | 'technical' | 'behavioral' | 'skills' | 'roadmap'
+  const [activeTab, setActiveTab] = useState("dashboard");
+
+  // Mobile sidebar drawer state
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Skill gap severity filter: 'all' | 'high' | 'medium' | 'low'
+  const [severityFilter, setSeverityFilter] = useState("all");
+
+  // Collapsible question states
+  const [expandedTech, setExpandedTech] = useState({});
+  const [expandedBehav, setExpandedBehav] = useState({});
+
+  // Copy answer feedback tracker
+  const [copiedId, setCopiedId] = useState(null);
+
+  // Interactive task completion state for Preparation Roadmap
+  const [completedTasks, setCompletedTasks] = useState({});
+
+  // Loading indicator from props or routeState
+  const isLoading = Boolean(props.loading || props.isLoading || routeState.loading);
+
+  // Safely extract report arrays and values with fallbacks
+  const matchScore = typeof report?.matchScore === "number" ? report.matchScore : 0;
+  const technicalQuestions = Array.isArray(report?.technicalQuestions) ? report.technicalQuestions : [];
+  const behavioralQuestions = Array.isArray(report?.behavioralQuestions)
+    ? report.behavioralQuestions
+    : Array.isArray(report?.behaviorQuestions)
+    ? report.behaviorQuestions
+    : [];
+  const skillGaps = Array.isArray(report?.skillGaps) ? report.skillGaps : [];
+  const preparationPlan = Array.isArray(report?.preparationPlan) ? report.preparationPlan : [];
+  const jobDescription = report?.jobDescription || "";
+  const selfDescription = report?.selfDescription || "";
+
+  // Skill gap severity counts
+  const highGaps = skillGaps.filter((g) => (g.severity || "").toLowerCase() === "high");
+  const mediumGaps = skillGaps.filter((g) => (g.severity || "").toLowerCase() === "medium");
+  const lowGaps = skillGaps.filter((g) => (g.severity || "").toLowerCase() === "low");
+
+  // Filtered skill gaps based on selected filter
+  const displayedSkillGaps =
+    severityFilter === "all"
+      ? skillGaps
+      : skillGaps.filter((g) => (g.severity || "").toLowerCase() === severityFilter);
+
+  // Roadmap task completion statistics
+  const totalRoadmapTasks = preparationPlan.reduce(
+    (acc, day) => acc + (Array.isArray(day?.tasks) ? day.tasks.length : 0),
+    0
+  );
+  const completedTasksCount = Object.values(completedTasks).filter(Boolean).length;
+  const roadmapProgressPct =
+    totalRoadmapTasks > 0 ? Math.round((completedTasksCount / totalRoadmapTasks) * 100) : 0;
+
+  // Toggle task checkbox
+  const handleTaskToggle = (dayIdx, taskIdx) => {
+    const key = `${dayIdx}-${taskIdx}`;
+    setCompletedTasks((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  // Copy text helper
+  const handleCopy = (text, id) => {
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(text);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    }
+  };
+
+  // Toggle tech question accordion
+  const toggleTechQuestion = (idx) => {
+    setExpandedTech((prev) => ({ ...prev, [idx]: !prev[idx] }));
+  };
+
+  const toggleAllTech = () => {
+    const allExpanded = technicalQuestions.every((_, i) => expandedTech[i]);
+    const nextState = {};
+    if (!allExpanded) {
+      technicalQuestions.forEach((_, i) => {
+        nextState[i] = true;
+      });
+    }
+    setExpandedTech(nextState);
+  };
+
+  // Toggle behavioral question accordion
+  const toggleBehavQuestion = (idx) => {
+    setExpandedBehav((prev) => ({ ...prev, [idx]: !prev[idx] }));
+  };
+
+  const toggleAllBehav = () => {
+    const allExpanded = behavioralQuestions.every((_, i) => expandedBehav[i]);
+    const nextState = {};
+    if (!allExpanded) {
+      behavioralQuestions.forEach((_, i) => {
+        nextState[i] = true;
+      });
+    }
+    setExpandedBehav(nextState);
+  };
+
+  // Circular progress calculations for Right Sidebar
+  const circleRadius = 46;
+  const circleCircumference = 2 * Math.PI * circleRadius;
+  const clampedScore = Math.min(Math.max(matchScore, 0), 100);
+  const strokeDashoffset = circleCircumference - (clampedScore / 100) * circleCircumference;
+
+  // Navigation Items Definition
+  const navItems = [
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      icon: (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.75}
+            d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 17a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1v-2z"
+          />
+        </svg>
+      ),
+    },
+    {
+      id: "technical",
+      label: "Technical Questions",
+      badge: technicalQuestions.length,
+      icon: (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.75}
+            d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+          />
+        </svg>
+      ),
+    },
+    {
+      id: "behavioral",
+      label: "Behavioral Questions",
+      badge: behavioralQuestions.length,
+      icon: (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.75}
+            d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
+          />
+        </svg>
+      ),
+    },
+    {
+      id: "skills",
+      label: "Skill Gaps",
+      badge: skillGaps.length,
+      icon: (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.75}
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+          />
+        </svg>
+      ),
+    },
+    {
+      id: "roadmap",
+      label: "Preparation Roadmap",
+      badge: preparationPlan.length ? `${preparationPlan.length}d` : null,
+      icon: (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.75}
+            d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+          />
+        </svg>
+      ),
+    },
+  ];
+
+  // ==========================================
+  // LOADING STATE
+  // ==========================================
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#0a0e1a] px-4 text-white">
+        <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-[#0f172a] p-8 text-center shadow-2xl shadow-violet-950/20">
+          <div className="relative mx-auto mb-6 flex h-16 w-16 items-center justify-center">
+            <div className="absolute inset-0 animate-ping rounded-full bg-violet-600/30" />
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-violet-500/20 border-t-violet-400" />
+          </div>
+          <h2 className="text-xl font-semibold text-slate-100">Analyzing Profile & Generating Report</h2>
+          <p className="mt-2 text-sm text-slate-400">
+            Our AI model is reviewing your resume against the job description...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // EMPTY STATE (No report provided)
+  // ==========================================
+  if (!report) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#0a0e1a] px-4 text-white">
+        <div className="w-full max-w-lg rounded-2xl border border-slate-800/80 bg-[#0f172a] p-8 text-center shadow-2xl">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-500/10 text-3xl text-violet-400">
+            📊
+          </div>
+          <h1 className="text-2xl font-bold text-white">No Interview Report Available</h1>
+          <p className="mt-3 text-sm leading-relaxed text-slate-400">
+            We couldn't find an interview report session. Please upload your resume and paste the job
+            description to generate your personalized AI interview plan.
+          </p>
+          <div className="mt-6 flex justify-center">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-900/30 transition hover:bg-violet-500"
+            >
+              <span>✨</span>
+              <span>Generate New Report</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Helper for severity badge styling
+  const renderSeverityBadge = (severity = "") => {
+    const s = severity.toLowerCase();
+    if (s === "high") {
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-500/30 bg-rose-500/10 px-2.5 py-1 text-xs font-medium text-rose-300">
+          <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
+          High Severity
+        </span>
+      );
+    }
+    if (s === "medium") {
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-300">
+          <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+          Medium Severity
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-300">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+        Low Severity
+      </span>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0a0e1a] text-slate-100 antialiased">
+      {/* Mobile Header Bar */}
+      <div className="flex items-center justify-between border-b border-slate-800 bg-[#0f172a]/80 px-4 py-3 backdrop-blur-md lg:hidden">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-600 text-lg font-bold text-white shadow-md shadow-violet-700/30">
+            ⚡
+          </div>
+          <div>
+            <span className="text-base font-bold tracking-tight text-white">Interview</span>
+            <span className="text-base font-bold text-violet-400">AI</span>
+          </div>
+        </div>
+        <button
+
+          type="button"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle navigation menu"
+          className="rounded-lg border border-slate-700 bg-slate-800/80 p-2 text-slate-300 transition hover:text-white"
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d={mobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
+            />
+          </svg>
+        </button>
+      </div>
+
+      {/* Main Container Layout */}
+      <div className="mx-auto flex max-w-7xl flex-col lg:flex-row">
+        {/* ========================================================= */}
+        {/* 1. LEFT SIDEBAR — NAVIGATION                              */}
+        {/* ========================================================= */}
+        <aside
+          className={`${
+            mobileMenuOpen ? "block" : "hidden"
+          } fixed inset-y-0 left-0 z-40 w-64 border-r border-slate-800/80 bg-[#0c1222] p-5 shadow-2xl lg:sticky lg:top-0 lg:block lg:h-screen lg:w-64 lg:shrink-0 lg:shadow-none`}
+        >
+          {/* Logo Brand */}
+          <div className="mb-8 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-500 text-lg font-bold text-white shadow-lg shadow-violet-900/40">
+                ⚡
+              </div>
+              <div>
+                <span className="text-lg font-bold tracking-tight text-white">Interview</span>
+                <span className="text-lg font-bold text-violet-400">AI</span>
+                <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500">
+                  Career Dashboard
+                </p>
+              </div>
+            </div>
+            {/* Close button for mobile drawer */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-label="Close mobile navigation"
+              className="rounded-lg p-1 text-slate-400 hover:text-white lg:hidden"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="space-y-1.5" aria-label="Sidebar Navigation">
+            {navItems.map((item) => {
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`group flex w-full items-center justify-between rounded-xl px-3.5 py-3 text-sm font-medium transition-all duration-200 ${
+                    isActive
+                      ? "border border-violet-500/30 bg-violet-600/15 text-violet-300 shadow-sm"
+                      : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`transition-colors duration-200 ${
+                        isActive ? "text-violet-400" : "text-slate-500 group-hover:text-slate-300"
+                      }`}
+                    >
+                      {item.icon}
+                    </span>
+                    <span>{item.label}</span>
+                  </div>
+                  {item.badge !== undefined && item.badge !== null && (
+                    <span
+                      className={`rounded-md px-2 py-0.5 text-xs font-semibold ${
+                        isActive
+                          ? "bg-violet-500/20 text-violet-300"
+                          : "bg-slate-800 text-slate-400 group-hover:text-slate-300"
+                      }`}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Bottom Action: Back to Home */}
+          <div className="absolute bottom-5 left-5 right-5">
+            <Link
+              to="/"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-800 bg-[#0f172a] px-3.5 py-2.5 text-xs font-medium text-slate-400 transition hover:border-slate-700 hover:bg-slate-800 hover:text-white"
+            >
+              <span>←</span>
+              <span>New Analysis</span>
+            </Link>
+          </div>
+        </aside>
+
+        {/* ========================================================= */}
+        {/* 2. CENTER CONTENT — DYNAMIC SECTION                       */}
+        {/* ========================================================= */}
+        <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
+          {/* TAB 1: DASHBOARD */}
+          {activeTab === "dashboard" && (
+            <div className="space-y-6">
+              {/* Welcome Heading Banner */}
+              <div className="rounded-2xl border border-slate-800/80 bg-gradient-to-r from-[#0f172a] via-[#111827] to-[#13112c] p-6 shadow-xl sm:p-8">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 px-3 py-1 text-xs font-semibold text-violet-300">
+                      ✨ AI Analysis Complete
+                    </span>
+                    <h1 className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+                      Interview Preparation Dashboard
+                    </h1>
+                    <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-slate-400">
+                      Your resume has been comprehensively evaluated against the role requirements.
+                      Review your technical & behavioral questions, bridge skill gaps, and execute the roadmap.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 sm:flex-col sm:items-end">
+                    <span className="text-3xl font-extrabold text-violet-400 sm:text-4xl">
+                      {matchScore}%
+                    </span>
+                    <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                      Match Score
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4 Stats Cards */}
+              <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4 sm:gap-4">
+                {/* Stat 1: Match Score */}
+                <div className="rounded-2xl border border-slate-800/80 bg-[#0f172a] p-4 shadow-sm transition hover:border-violet-500/30">
+                  <div className="flex items-center justify-between text-slate-400">
+                    <span className="text-xs font-medium">Match Score</span>
+                    <span className="text-base text-violet-400">🎯</span>
+                  </div>
+                  <p className="mt-2 text-2xl font-bold text-white">{matchScore}%</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {matchScore >= 80 ? "Strong Fit" : matchScore >= 60 ? "Moderate Fit" : "Needs Prep"}
+                  </p>
+                </div>
+
+                {/* Stat 2: Technical Qs */}
+                <div
+                  onClick={() => setActiveTab("technical")}
+                  className="cursor-pointer rounded-2xl border border-slate-800/80 bg-[#0f172a] p-4 shadow-sm transition hover:border-violet-500/40 hover:bg-[#121c35]"
+                >
+                  <div className="flex items-center justify-between text-slate-400">
+                    <span className="text-xs font-medium">Technical Qs</span>
+                    <span className="text-base text-violet-400">💻</span>
+                  </div>
+                  <p className="mt-2 text-2xl font-bold text-white">{technicalQuestions.length}</p>
+                  <p className="mt-1 text-xs text-violet-400">View questions →</p>
+                </div>
+
+                {/* Stat 3: Behavioral Qs */}
+                <div
+                  onClick={() => setActiveTab("behavioral")}
+                  className="cursor-pointer rounded-2xl border border-slate-800/80 bg-[#0f172a] p-4 shadow-sm transition hover:border-violet-500/40 hover:bg-[#121c35]"
+                >
+                  <div className="flex items-center justify-between text-slate-400">
+                    <span className="text-xs font-medium">Behavioral Qs</span>
+                    <span className="text-base text-violet-400">👥</span>
+                  </div>
+                  <p className="mt-2 text-2xl font-bold text-white">{behavioralQuestions.length}</p>
+                  <p className="mt-1 text-xs text-violet-400">View questions →</p>
+                </div>
+
+                {/* Stat 4: Skill Gaps */}
+                <div
+                  onClick={() => setActiveTab("skills")}
+                  className="cursor-pointer rounded-2xl border border-slate-800/80 bg-[#0f172a] p-4 shadow-sm transition hover:border-violet-500/40 hover:bg-[#121c35]"
+                >
+                  <div className="flex items-center justify-between text-slate-400">
+                    <span className="text-xs font-medium">Skill Gaps</span>
+                    <span className="text-base text-amber-400">⚠️</span>
+                  </div>
+                  <p className="mt-2 text-2xl font-bold text-white">{skillGaps.length}</p>
+                  <p className="mt-1 text-xs text-amber-400">Review gaps →</p>
+                </div>
+              </div>
+
+              {/* Quick Navigation Action Grid */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div
+                  onClick={() => setActiveTab("technical")}
+                  className="group cursor-pointer rounded-2xl border border-slate-800/80 bg-[#0f172a] p-5 shadow-sm transition hover:border-violet-500/50 hover:bg-[#121c35]"
+                >
+                  <div className="flex items-center gap-3.5">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-600/15 text-xl text-violet-400 transition group-hover:scale-105">
+                      💻
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-white group-hover:text-violet-300">
+                        Technical Questions
+                      </h3>
+                      <p className="text-xs text-slate-400">
+                        {technicalQuestions.length} curated questions with interviewer intentions and model answers.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  onClick={() => setActiveTab("behavioral")}
+                  className="group cursor-pointer rounded-2xl border border-slate-800/80 bg-[#0f172a] p-5 shadow-sm transition hover:border-violet-500/50 hover:bg-[#121c35]"
+                >
+                  <div className="flex items-center gap-3.5">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-600/15 text-xl text-indigo-400 transition group-hover:scale-105">
+                      💬
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-white group-hover:text-violet-300">
+                        Behavioral Questions
+                      </h3>
+                      <p className="text-xs text-slate-400">
+                        {behavioralQuestions.length} situational questions with STAR methodology responses.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  onClick={() => setActiveTab("skills")}
+                  className="group cursor-pointer rounded-2xl border border-slate-800/80 bg-[#0f172a] p-5 shadow-sm transition hover:border-violet-500/50 hover:bg-[#121c35]"
+                >
+                  <div className="flex items-center gap-3.5">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-600/15 text-xl text-amber-400 transition group-hover:scale-105">
+                      🎯
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-white group-hover:text-violet-300">
+                        Skill Gaps & Impact
+                      </h3>
+                      <p className="text-xs text-slate-400">
+                        {skillGaps.length} areas identified, categorized by low, medium, and high severity.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  onClick={() => setActiveTab("roadmap")}
+                  className="group cursor-pointer rounded-2xl border border-slate-800/80 bg-[#0f172a] p-5 shadow-sm transition hover:border-violet-500/50 hover:bg-[#121c35]"
+                >
+                  <div className="flex items-center gap-3.5">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-600/15 text-xl text-emerald-400 transition group-hover:scale-105">
+                      🗓️
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-white group-hover:text-violet-300">
+                        Preparation Roadmap
+                      </h3>
+                      <p className="text-xs text-slate-400">
+                        {preparationPlan.length}-day action plan with interactive task checkboxes.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Summary of Job & Profile Context if present */}
+              {(jobDescription || selfDescription) && (
+                <div className="rounded-2xl border border-slate-800/80 bg-[#0f172a] p-6 shadow-sm">
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+                    Role & Candidate Profile Reference
+                  </h3>
+                  <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {jobDescription && (
+                      <div className="rounded-xl border border-slate-800/60 bg-[#0a0e1a]/60 p-4">
+                        <span className="text-xs font-medium text-violet-400">Target Role Requirements</span>
+                        <p className="mt-2 line-clamp-4 text-xs leading-relaxed text-slate-300">
+                          {jobDescription}
+                        </p>
+                      </div>
+                    )}
+                    {selfDescription && (
+                      <div className="rounded-xl border border-slate-800/60 bg-[#0a0e1a]/60 p-4">
+                        <span className="text-xs font-medium text-emerald-400">Candidate Background</span>
+                        <p className="mt-2 line-clamp-4 text-xs leading-relaxed text-slate-300">
+                          {selfDescription}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 2: TECHNICAL QUESTIONS */}
+          {activeTab === "technical" && (
+            <div className="space-y-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-white sm:text-2xl">Technical Questions</h2>
+                  <p className="text-xs text-slate-400 sm:text-sm">
+                    {technicalQuestions.length} questions tailored to test your technical competency.
+                  </p>
+                </div>
+                {technicalQuestions.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={toggleAllTech}
+                    className="inline-flex items-center gap-1.5 self-start rounded-xl border border-slate-700 bg-slate-800/70 px-3.5 py-2 text-xs font-medium text-slate-300 transition hover:bg-slate-700 hover:text-white"
+                  >
+                    <span>{technicalQuestions.every((_, i) => expandedTech[i]) ? "Collapse All" : "Expand All"}</span>
+                  </button>
+                )}
+              </div>
+
+              {technicalQuestions.length === 0 ? (
+                <div className="rounded-2xl border border-slate-800 bg-[#0f172a] p-8 text-center text-sm text-slate-400">
+                  No technical questions generated in this report.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {technicalQuestions.map((q, idx) => {
+                    const isExpanded = Boolean(expandedTech[idx]);
+                    const copyKey = `tech-${idx}`;
+                    const isCopied = copiedId === copyKey;
+
+                    return (
+                      <div
+                        key={idx}
+                        className="overflow-hidden rounded-2xl border border-slate-800/80 bg-[#0f172a] shadow-sm transition hover:border-slate-700"
+                      >
+                        {/* Question Card Header */}
+                        <div
+                          onClick={() => toggleTechQuestion(idx)}
+                          className="flex cursor-pointer items-start justify-between gap-4 p-5"
+                        >
+                          <div className="flex items-start gap-3.5">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-violet-600/20 text-xs font-bold text-violet-300">
+                              Q{idx + 1}
+                            </span>
+                            <div>
+                              <h3 className="text-sm font-semibold leading-snug text-white sm:text-base">
+                                {q.question}
+                              </h3>
+                              <span className="mt-1.5 inline-block text-[11px] font-medium text-violet-400">
+                                {isExpanded ? "Click to collapse" : "Click to view intention & answer"}
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-slate-400 transition-transform duration-200">
+                            {isExpanded ? "▲" : "▼"}
+                          </span>
+                        </div>
+
+                        {/* Collapsible Answer & Intention Section */}
+                        {isExpanded && (
+                          <div className="border-t border-slate-800/80 bg-[#0a0e1a]/40 p-5 pt-4 space-y-4">
+                            {/* Intention */}
+                            {q.intention && (
+                              <div className="rounded-xl border border-slate-800 bg-[#0f172a]/70 p-4">
+                                <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-violet-400">
+                                  <span>🎯</span> Interviewer Intention
+                                </span>
+                                <p className="mt-1.5 text-xs leading-relaxed text-slate-300 sm:text-sm">
+                                  {q.intention}
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Suggested Answer */}
+                            {q.answer && (
+                              <div className="rounded-xl border border-slate-800 bg-[#0f172a]/70 p-4">
+                                <div className="flex items-center justify-between">
+                                  <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-emerald-400">
+                                    <span>💡</span> Suggested Answer & Strategy
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleCopy(q.answer, copyKey);
+                                    }}
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800/80 px-2.5 py-1 text-xs font-medium text-slate-300 transition hover:bg-slate-700 hover:text-white"
+                                  >
+                                    <span>{isCopied ? "✓ Copied" : "📋 Copy Answer"}</span>
+                                  </button>
+                                </div>
+                                <p className="mt-2 whitespace-pre-line text-xs leading-relaxed text-slate-300 sm:text-sm">
+                                  {q.answer}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: BEHAVIORAL QUESTIONS */}
+          {activeTab === "behavioral" && (
+            <div className="space-y-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-white sm:text-2xl">Behavioral Questions</h2>
+                  <p className="text-xs text-slate-400 sm:text-sm">
+                    {behavioralQuestions.length} situational questions to assess leadership, collaboration, and problem solving.
+                  </p>
+                </div>
+                {behavioralQuestions.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={toggleAllBehav}
+                    className="inline-flex items-center gap-1.5 self-start rounded-xl border border-slate-700 bg-slate-800/70 px-3.5 py-2 text-xs font-medium text-slate-300 transition hover:bg-slate-700 hover:text-white"
+                  >
+                    <span>{behavioralQuestions.every((_, i) => expandedBehav[i]) ? "Collapse All" : "Expand All"}</span>
+                  </button>
+                )}
+              </div>
+
+              {behavioralQuestions.length === 0 ? (
+                <div className="rounded-2xl border border-slate-800 bg-[#0f172a] p-8 text-center text-sm text-slate-400">
+                  No behavioral questions generated in this report.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {behavioralQuestions.map((q, idx) => {
+                    const isExpanded = Boolean(expandedBehav[idx]);
+                    const copyKey = `behav-${idx}`;
+                    const isCopied = copiedId === copyKey;
+
+                    return (
+                      <div
+                        key={idx}
+                        className="overflow-hidden rounded-2xl border border-slate-800/80 bg-[#0f172a] shadow-sm transition hover:border-slate-700"
+                      >
+                        {/* Question Card Header */}
+                        <div
+                          onClick={() => toggleBehavQuestion(idx)}
+                          className="flex cursor-pointer items-start justify-between gap-4 p-5"
+                        >
+                          <div className="flex items-start gap-3.5">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-600/20 text-xs font-bold text-indigo-300">
+                              B{idx + 1}
+                            </span>
+                            <div>
+                              <h3 className="text-sm font-semibold leading-snug text-white sm:text-base">
+                                {q.question}
+                              </h3>
+                              <span className="mt-1.5 inline-block text-[11px] font-medium text-indigo-400">
+                                {isExpanded ? "Click to collapse" : "Click to view intention & answer"}
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-slate-400 transition-transform duration-200">
+                            {isExpanded ? "▲" : "▼"}
+                          </span>
+                        </div>
+
+                        {/* Collapsible Intention & Answer */}
+                        {isExpanded && (
+                          <div className="border-t border-slate-800/80 bg-[#0a0e1a]/40 p-5 pt-4 space-y-4">
+                            {/* Intention */}
+                            {q.intention && (
+                              <div className="rounded-xl border border-slate-800 bg-[#0f172a]/70 p-4">
+                                <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-indigo-400">
+                                  <span>🎯</span> Behavioral Objective
+                                </span>
+                                <p className="mt-1.5 text-xs leading-relaxed text-slate-300 sm:text-sm">
+                                  {q.intention}
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Suggested Answer */}
+                            {q.answer && (
+                              <div className="rounded-xl border border-slate-800 bg-[#0f172a]/70 p-4">
+                                <div className="flex items-center justify-between">
+                                  <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-emerald-400">
+                                    <span>⭐</span> STAR Method Model Answer
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleCopy(q.answer, copyKey);
+                                    }}
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800/80 px-2.5 py-1 text-xs font-medium text-slate-300 transition hover:bg-slate-700 hover:text-white"
+                                  >
+                                    <span>{isCopied ? "✓ Copied" : "📋 Copy Answer"}</span>
+                                  </button>
+                                </div>
+                                <p className="mt-2 whitespace-pre-line text-xs leading-relaxed text-slate-300 sm:text-sm">
+                                  {q.answer}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 4: SKILL GAPS */}
+          {activeTab === "skills" && (
+            <div className="space-y-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-white sm:text-2xl">Identified Skill Gaps</h2>
+                  <p className="text-xs text-slate-400 sm:text-sm">
+                    Skills to prioritize before your interview based on profile discrepancies.
+                  </p>
+                </div>
+                {/* Severity Filter Controls */}
+                <div className="flex flex-wrap gap-1.5 rounded-xl border border-slate-800 bg-[#0f172a] p-1">
+                  {[
+                    { id: "all", label: `All (${skillGaps.length})` },
+                    { id: "high", label: `High (${highGaps.length})` },
+                    { id: "medium", label: `Med (${mediumGaps.length})` },
+                    { id: "low", label: `Low (${lowGaps.length})` },
+                  ].map((filter) => (
+                    <button
+                      key={filter.id}
+                      type="button"
+                      onClick={() => setSeverityFilter(filter.id)}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                        severityFilter === filter.id
+                          ? "bg-violet-600 text-white shadow-sm"
+                          : "text-slate-400 hover:text-slate-200"
+                      }`}
+                    >
+                      {filter.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {displayedSkillGaps.length === 0 ? (
+                <div className="rounded-2xl border border-slate-800 bg-[#0f172a] p-8 text-center text-sm text-slate-400">
+                  {skillGaps.length === 0
+                    ? "No skill gaps identified. Your profile closely matches the requirements!"
+                    : "No skill gaps found for this severity filter."}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {displayedSkillGaps.map((item, idx) => {
+                    const skillName = item.skill || item.skills || "Unspecified Skill";
+                    const severity = item.severity || "medium";
+                    const explanation = item.explanation || item.reason || item.description || null;
+
+                    return (
+                      <div
+                        key={idx}
+                        className="flex flex-col justify-between rounded-2xl border border-slate-800/80 bg-[#0f172a] p-5 shadow-sm transition hover:border-slate-700"
+                      >
+                        <div>
+                          <div className="flex items-start justify-between gap-3">
+                            <h3 className="text-base font-semibold text-white">{skillName}</h3>
+                            {renderSeverityBadge(severity)}
+                          </div>
+                          {explanation && (
+                            <p className="mt-2 text-xs leading-relaxed text-slate-400">
+                              {explanation}
+                            </p>
+                          )}
+                        </div>
+                        <div className="mt-4 flex items-center justify-between border-t border-slate-800/60 pt-3 text-[11px] text-slate-500">
+                          <span>Priority Index: #{idx + 1}</span>
+                          <span
+                            onClick={() => setActiveTab("roadmap")}
+                            className="cursor-pointer text-violet-400 hover:underline"
+                          >
+                            Addressed in Roadmap →
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 5: PREPARATION ROADMAP */}
+          {activeTab === "roadmap" && (
+            <div className="space-y-6">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-white sm:text-2xl">Preparation Roadmap</h2>
+                  <p className="text-xs text-slate-400 sm:text-sm">
+                    Structured day-by-day plan to prepare thoroughly before interview day.
+                  </p>
+                </div>
+                <div className="rounded-xl border border-slate-800 bg-[#0f172a] px-3.5 py-2 text-xs text-slate-300">
+                  <span className="font-semibold text-violet-400">{completedTasksCount}</span> of{" "}
+                  <span className="font-semibold text-white">{totalRoadmapTasks}</span> tasks completed (
+                  <span className="font-semibold text-emerald-400">{roadmapProgressPct}%</span>)
+                </div>
+              </div>
+
+              {/* Session persistence notice */}
+              <div className="rounded-xl border border-violet-500/20 bg-violet-500/5 px-4 py-3 text-xs text-violet-300 flex items-center gap-2">
+                <span>ℹ️</span>
+                <span>
+                  Roadmap task checkboxes are tracked interactively for your current preparation session.
+                </span>
+              </div>
+
+              {preparationPlan.length === 0 ? (
+                <div className="rounded-2xl border border-slate-800 bg-[#0f172a] p-8 text-center text-sm text-slate-400">
+                  No preparation plan generated for this report.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {preparationPlan.map((dayPlan, dayIdx) => {
+                    const dayNum = dayPlan.day || dayIdx + 1;
+                    const focus = dayPlan.focus || "Focus Topic";
+                    const tasks = Array.isArray(dayPlan.tasks) ? dayPlan.tasks : [];
+
+                    // Count completed for this day
+                    const dayCompleted = tasks.filter((_, tIdx) => completedTasks[`${dayIdx}-${tIdx}`]).length;
+
+                    return (
+                      <div
+                        key={dayIdx}
+                        className="rounded-2xl border border-slate-800/80 bg-[#0f172a] p-5 shadow-sm transition hover:border-slate-700 sm:p-6"
+                      >
+                        {/* Day Header */}
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="flex items-center gap-3">
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-600/20 text-xs font-bold text-violet-300">
+                              D{dayNum}
+                            </span>
+                            <div>
+                              <h3 className="text-base font-semibold text-white">
+                                Day {dayNum}: {focus}
+                              </h3>
+                              <p className="text-xs text-slate-400">
+                                {tasks.length} targeted preparation task{tasks.length === 1 ? "" : "s"}
+                              </p>
+                            </div>
+                          </div>
+                          <span className="self-start rounded-full border border-slate-800 bg-slate-900 px-3 py-1 text-xs font-medium text-slate-300 sm:self-auto">
+                            {dayCompleted}/{tasks.length} Done
+                          </span>
+                        </div>
+
+                        {/* Tasks Checklist */}
+                        <div className="mt-4 space-y-2.5 border-t border-slate-800/60 pt-4">
+                          {tasks.map((task, taskIdx) => {
+                            const isChecked = Boolean(completedTasks[`${dayIdx}-${taskIdx}`]);
+
+                            return (
+                              <label
+                                key={taskIdx}
+                                className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition ${
+                                  isChecked
+                                    ? "border-emerald-500/20 bg-emerald-500/5 text-slate-400"
+                                    : "border-slate-800/60 bg-[#0a0e1a]/40 text-slate-200 hover:border-slate-700"
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => handleTaskToggle(dayIdx, taskIdx)}
+                                  className="mt-0.5 h-4 w-4 rounded border-slate-700 bg-slate-900 text-violet-600 focus:ring-violet-500"
+                                />
+                                <span className={`text-xs leading-relaxed sm:text-sm ${isChecked ? "line-through text-slate-500" : ""}`}>
+                                  {task}
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </main>
+
+        {/* ========================================================= */}
+        {/* 3. RIGHT SIDEBAR — INSIGHTS                               */}
+        {/* ========================================================= */}
+        <aside className="w-full border-t border-slate-800/80 bg-[#0c1222] p-5 sm:p-6 lg:w-80 lg:shrink-0 lg:border-t-0 lg:border-l lg:p-6">
+          <div className="space-y-6">
+            {/* Header */}
+            <div>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+                Evaluation Insights
+              </h2>
+              <p className="mt-1 text-xs text-slate-500">Live breakdown of your profile metrics</p>
+            </div>
+
+            {/* Circular Progress Match Score Widget */}
+            <div className="flex flex-col items-center rounded-2xl border border-slate-800/80 bg-[#0f172a] p-6 text-center shadow-sm">
+              <div className="relative flex h-32 w-32 items-center justify-center">
+                <svg className="h-32 w-32 -rotate-90 transform" viewBox="0 0 120 120">
+                  {/* Background Track Circle */}
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r={circleRadius}
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    fill="transparent"
+                    className="text-slate-800"
+                  />
+                  {/* Active Foreground Progress Arc */}
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r={circleRadius}
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    fill="transparent"
+                    strokeDasharray={circleCircumference}
+                    strokeDashoffset={strokeDashoffset}
+                    strokeLinecap="round"
+                    className="text-violet-500 transition-all duration-1000 ease-out"
+                  />
+                </svg>
+                {/* Score Number in Center */}
+                <div className="absolute flex flex-col items-center justify-center">
+                  <span className="text-2xl font-extrabold text-white">{matchScore}%</span>
+                  <span className="text-[10px] uppercase tracking-wider text-slate-400">Match</span>
+                </div>
+              </div>
+
+              <div className="mt-3">
+                <span
+                  className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
+                    matchScore >= 80
+                      ? "bg-emerald-500/10 text-emerald-300 border border-emerald-500/20"
+                      : matchScore >= 60
+                      ? "bg-violet-500/10 text-violet-300 border border-violet-500/20"
+                      : "bg-amber-500/10 text-amber-300 border border-amber-500/20"
+                  }`}
+                >
+                  {matchScore >= 80 ? "High Match Potential" : matchScore >= 60 ? "Moderate Alignment" : "Preparation Required"}
+                </span>
+                <p className="mt-2 text-xs text-slate-400">
+                  {matchScore >= 80
+                    ? "Your skills strongly overlap with primary job requirements."
+                    : "Focus on identified skill gaps to boost interview confidence."}
+                </p>
+              </div>
+            </div>
+
+            {/* Skill Gap Severity Breakdown */}
+            <div className="rounded-2xl border border-slate-800/80 bg-[#0f172a] p-5 shadow-sm">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Skill Gaps Severity
+                </h3>
+                <span className="text-xs font-semibold text-white">{skillGaps.length} total</span>
+              </div>
+
+              {/* Progress Stack Bar */}
+              {skillGaps.length > 0 && (
+                <div className="mt-3 flex h-2.5 w-full overflow-hidden rounded-full bg-slate-800">
+                  {highGaps.length > 0 && (
+                    <div
+                      style={{ width: `${(highGaps.length / skillGaps.length) * 100}%` }}
+                      className="bg-rose-500 transition-all duration-500"
+                      title={`${highGaps.length} High Severity`}
+                    />
+                  )}
+                  {mediumGaps.length > 0 && (
+                    <div
+                      style={{ width: `${(mediumGaps.length / skillGaps.length) * 100}%` }}
+                      className="bg-amber-500 transition-all duration-500"
+                      title={`${mediumGaps.length} Medium Severity`}
+                    />
+                  )}
+                  {lowGaps.length > 0 && (
+                    <div
+                      style={{ width: `${(lowGaps.length / skillGaps.length) * 100}%` }}
+                      className="bg-emerald-500 transition-all duration-500"
+                      title={`${lowGaps.length} Low Severity`}
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* Severity Counts Table */}
+              <div className="mt-4 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-2 text-slate-300">
+                    <span className="h-2 w-2 rounded-full bg-rose-400" />
+                    High Severity
+                  </span>
+                  <span className="font-semibold text-white">{highGaps.length}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-2 text-slate-300">
+                    <span className="h-2 w-2 rounded-full bg-amber-400" />
+                    Medium Severity
+                  </span>
+                  <span className="font-semibold text-white">{mediumGaps.length}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-2 text-slate-300">
+                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                    Low Severity
+                  </span>
+                  <span className="font-semibold text-white">{lowGaps.length}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Recommended Preparation Priorities */}
+            <div className="rounded-2xl border border-slate-800/80 bg-[#0f172a] p-5 shadow-sm">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                Preparation Priorities
+              </h3>
+              <p className="mt-1 text-xs text-slate-500">Address high-severity items first</p>
+
+              <div className="mt-3.5 space-y-2">
+                {highGaps.length > 0 ? (
+                  highGaps.slice(0, 3).map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between rounded-xl border border-rose-500/20 bg-rose-500/5 px-3 py-2 text-xs"
+                    >
+                      <span className="font-medium text-slate-200 truncate max-w-[150px]">
+                        {item.skill || item.skills}
+                      </span>
+                      <span className="text-[10px] font-semibold text-rose-400">High Priority</span>
+                    </div>
+                  ))
+                ) : mediumGaps.length > 0 ? (
+                  mediumGaps.slice(0, 3).map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between rounded-xl border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs"
+                    >
+                      <span className="font-medium text-slate-200 truncate max-w-[150px]">
+                        {item.skill || item.skills}
+                      </span>
+                      <span className="text-[10px] font-semibold text-amber-400">Medium Priority</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-slate-400">No critical priority gaps identified.</p>
+                )}
+              </div>
+            </div>
+
+            {/* Preparation Roadmap Progress Card */}
+            <div className="rounded-2xl border border-slate-800/80 bg-[#0f172a] p-5 shadow-sm">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Roadmap Progress
+                </h3>
+                <span className="text-xs font-semibold text-violet-400">{roadmapProgressPct}%</span>
+              </div>
+              <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-slate-800">
+                <div
+                  style={{ width: `${roadmapProgressPct}%` }}
+                  className="h-full bg-gradient-to-red from-violet-600 to-indigo-500 transition-all duration-300"
+                />
+              </div>
+              <p className="mt-2 text-xs text-slate-400">
+                {completedTasksCount} of {totalRoadmapTasks} tasks checked off in this session.
+              </p>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+};
+
+export default Interview;
+
