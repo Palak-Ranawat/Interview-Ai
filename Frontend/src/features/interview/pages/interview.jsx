@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, Link, useParams } from "react-router-dom";
+import useInterview from "../hooks/useinterview";
 
 /**
  * Interview Report Component
@@ -10,180 +11,39 @@ import { useLocation, Link, useParams } from "react-router-dom";
  * - Right insights sidebar with circular match score ring, gap distribution, and priorities
  */
 // Real interview report data from your database session
-const REAL_REPORT = {
-  _id: "6acded7739b77486abc945cb",
-  jobDescription:
-    "**Job Title:** React.js Developer Intern\r\n\r\n**Job Description:**\r\n\r\nWe are looking for a motivated React.js Developer Intern with a basic understanding of frontend development. The candidate should have knowledge of HTML, CSS, JavaScript, React.js, and responsive web design.\r\n\r\n**Responsibilities:**\r\n\r\n* Develop responsive and user-friendly web applications using React.js.\r\n* Create reusable components and manage application state.\r\n* Integrate REST APIs and handle asynchronous data.\r\n* Use Git and GitHub for version control.\r\n* Debug code and improve application performance.\r\n* Collaborate with team members to develop and maintain projects.\r\n\r\n**Required Skills:**\r\n\r\n* HTML5, CSS3, and JavaScript (ES6+).\r\n* React.js, components, props, hooks, and state management.\r\n* Basic knowledge of REST APIs and JSON.\r\n* Familiarity with Git and GitHub.\r\n* Understanding of responsive design and Tailwind CSS.\r\n* Basic knowledge of Node.js and MongoDB is a plus.\r\n\r\n**Eligibility:** Pursuing a B.Tech/B.E. in Computer Science or a related field.\r\n\r\n**Experience:** Fresher or internship-level candidate.\r\n\r\n**Objective:** Gain practical experience in frontend development while contributing to real-world software projects.",
-  resume:
-    "PALAK RANAWAT\nFrontend Developer | React.js | JavaScript | Tailwind CSS | Redux Toolkit\n07803084728 palakranawat9@gmail.com LinkedIn GitHub Protfolio indore, India\nPROFESSIONAL SUMMARY\nMotivated Computer Science Engineering student with hands-on experience in building responsive web applications using HTML, CSS, JavaScript, React.js, and Tailwind CSS. Currently mastering Redux Toolkit and modern frontend development practices. Seeking an internship or entry-level frontend developer role.",
-  selfDescription:
-    "I am a third-year B.Tech Computer Science Engineering student at Sushila Devi Bansal College of Technology, Indore. I am passionate about web development and currently focusing on frontend development using HTML, CSS, JavaScript, React.js, and Tailwind CSS. I am also learning backend development with Node.js, Express.js, and MongoDB to become a full-stack developer.\r\n\r\nI have worked on projects such as a Currency Converter, Password Generator, and a personal portfolio website. These projects have helped me improve my problem-solving skills and understand how to build responsive and user-friendly web applications.\r\n\r\nI am a quick learner, enjoy exploring new technologies, and believe in continuous improvement. My short-term goal is to secure a software development internship where I can apply my skills and gain practical industry experience. My long-term goal is to become a skilled full-stack developer and contribute to real-world projects.",
-  matchScore: 88,
-  technicalQuestions: [
-    {
-      question:
-        "How do you handle asynchronous data fetching and error states in React, and how did you implement this in your Currency Converter project?",
-      intention:
-        "To assess your practical understanding of the useEffect hook, promise handling with async/await, and managing loading and error states in UI.",
-      answer:
-        "In React, asynchronous operations such as fetching data from a REST API are typically handled inside a useEffect hook or via event handlers using async/await. You maintain separate state variables for data, loading status, and errors using useState. In the Currency Converter project, when the user changes a currency or amount, an API call is triggered to fetch the latest exchange rates. During the network request, a loading state is set to true to give user feedback, and try-catch blocks are used to catch errors, updating an error state to display an alert or fallback UI if the fetch fails.",
-    },
-    {
-      question:
-        "What is the difference between props and state in React, and when would you lift state up?",
-      intention:
-        "To test your foundational knowledge of data flow, component re-rendering, and state architecture in React.",
-      answer:
-        "Props (properties) are read-only inputs passed from a parent component to a child component to configure it or pass data down unidirectionally. State is mutable, local data managed within the component that can trigger re-renders when updated. 'Lifting state up' refers to moving state from child components to their closest common ancestor when multiple sibling components need access to or modify the same piece of data, ensuring a single source of truth.",
-    },
-    {
-      question:
-        "Explain the role of the dependency array in the useEffect hook and what happens if it is omitted, empty, or populated with variables.",
-      intention:
-        "To verify your understanding of component lifecycle management and preventing infinite render loops.",
-      answer:
-        "The dependency array dictates when the useEffect callback executes. If omitted, the effect runs after every single render of the component. If an empty array [] is passed, the effect runs only once after the initial render, similar to componentDidMount. If variables are provided in the array [dep1, dep2], the effect executes on mount and then re-runs whenever any of those specified dependencies change their values between renders.",
-    },
-    {
-      question:
-        "How do modern JavaScript ES6+ features such as destructuring, arrow functions, and array methods (map, filter) assist in React development?",
-      intention:
-        "To evaluate your core JavaScript proficiency which forms the foundation of clean, idiomatic React code.",
-      answer:
-        "ES6+ features make React code concise and readable. Destructuring allows for clean extraction of props or state variables (e.g., const { rate } = data). Arrow functions provide concise syntax and retain lexical 'this' binding. Array methods like .map() are essential in React for dynamically transforming lists of data into arrays of JSX elements with unique 'key' attributes, while .filter() is commonly used to remove or filter items from lists immutably before updating state.",
-    },
-    {
-      question:
-        "How does Tailwind CSS facilitate building responsive user interfaces compared to traditional CSS stylesheets?",
-      intention:
-        "To evaluate your hands-on experience with Tailwind CSS responsive design utilities as stated in your resume projects.",
-      answer:
-        "Tailwind CSS uses utility-first classes applied directly within JSX, eliminating context-switching between CSS and markup. For responsive design, Tailwind provides responsive variant prefixes (such as sm:, md:, lg:, and xl:). By applying mobile-first design principles, default classes apply to mobile devices, while prefixed classes adapt the layout, typography, or grid/flex arrangements as viewport breakpoints expand, streamlining multi-screen optimization.",
-    },
-  ],
-  behavioralQuestions: [
-    {
-      question:
-        "Tell me about a specific technical challenge you encountered while building your Password Generator or Currency Converter project and how you solved it.",
-      intention:
-        "To assess your analytical problem-solving skills, debugging approach, and technical resilience when facing hurdles.",
-      answer:
-        "Use the STAR framework (Situation, Task, Action, Result). For example, discuss an issue where generating passwords with specific character constraints caused edge cases, or handling asynchronous API rate-limiting in the Currency Converter. Detail how you isolated the issue using console logs or developer tools, researched documentation, refactored the logic, and verified the fix.",
-    },
-    {
-      question:
-        "As a student pursuing your B.Tech degree, how do you manage your time between academic coursework and self-learning modern web technologies?",
-      intention:
-        "To evaluate your time management, prioritization, dedication, and capacity to handle internship responsibilities alongside your studies.",
-      answer:
-        "Structure your answer by explaining how you schedule dedicated daily blocks for coding outside of lecture hours, use version control and project-based milestones to maintain progress, and prioritize high-impact learning concepts such as React and APIs that complement academic subjects like Data Structures and DBMS.",
-    },
-    {
-      question:
-        "Describe a scenario where you received constructive feedback on your code or project. How did you react and implement the changes?",
-      intention:
-        "To gauge your receptiveness to mentoring, openness to learning, and team adaptability.",
-      answer:
-        "Mention an instance where a mentor, peer, or reviewer suggested improving code readability, component modularity, or UI responsiveness. Explain that you welcomed the feedback objectively, understood the reasoning behind best practices, and refactored the code promptly to improve the project's maintainability.",
-    },
-  ],
-  skillGaps: [
-    {
-      skill: "Practical Redux Toolkit implementation in production projects",
-      severity: "medium",
-    },
-    {
-      skill: "Automated frontend testing (Jest, React Testing Library)",
-      severity: "medium",
-    },
-    {
-      skill: "React performance optimization techniques (React.memo, useCallback, useMemo)",
-      severity: "low",
-    },
-    {
-      skill: "Full-stack integration with Node.js and MongoDB APIs",
-      severity: "low",
-    },
-  ],
-  preparationPlan: [
-    {
-      day: 1,
-      focus: "Core JavaScript and ES6+ Mastery",
-      tasks: [
-        "Review ES6+ features: arrow functions, destructuring, rest/spread operators, and template literals.",
-        "Practice array manipulation using map, filter, reduce, and find.",
-        "Deepen understanding of Promises, async/await, and event loops.",
-      ],
-    },
-    {
-      day: 2,
-      focus: "React Fundamentals and Component Architecture",
-      tasks: [
-        "Revise React component lifecycles, Virtual DOM, and unidirectional data flow.",
-        "Practice building reusable, modular components using props and children.",
-        "Review conditional rendering techniques and proper usage of key props in lists.",
-      ],
-    },
-    {
-      day: 3,
-      focus: "State Management with React Hooks",
-      tasks: [
-        "Master useState and useEffect, paying special attention to dependency arrays and cleanup functions.",
-        "Review useRef, useMemo, and useCallback to understand their specific use cases.",
-        "Write a custom hook to encapsulate reusable logic (e.g., useFetch or useLocalStorage).",
-      ],
-    },
-    {
-      day: 4,
-      focus: "REST API Integration and Error Handling",
-      tasks: [
-        "Review network requests using Fetch API and Axios.",
-        "Practice handling loading, success, and error states gracefully in UI.",
-        "Review your Currency Converter project codebase and optimize its API handling logic.",
-      ],
-    },
-    {
-      day: 5,
-      focus: "Redux Toolkit & Global State Management",
-      tasks: [
-        "Review the fundamentals of Redux Toolkit: configureStore, createSlice, reducers, and actions.",
-        "Practice consuming global state using useSelector and dispatching actions with useDispatch.",
-        "Compare Redux Toolkit with React Context API and be ready to explain when to choose each.",
-      ],
-    },
-    {
-      day: 6,
-      focus: "Tailwind CSS, Responsive Design, and Git Workflow",
-      tasks: [
-        "Practice creating responsive layouts (Flexbox, Grid) with Tailwind breakpoints (sm, md, lg).",
-        "Review Git commands: branching, merging, pull requests, resolving conflicts, and rebasing.",
-        "Prepare clean live demos and GitHub README overviews for your projects.",
-      ],
-    },
-    {
-      day: 7,
-      focus: "Project Deep-Dive and Behavioral Interview Mock",
-      tasks: [
-        "Prepare a 2-minute concise walkthrough of each project on your resume.",
-        "Rehearse answers to behavioral questions using the STAR framework.",
-        "Conduct a mock interview focusing on explaining technical concepts clearly and concisely.",
-      ],
-    },
-  ],
-};
 
 const Interview = (props) => {
   const location = useLocation();
   const params = useParams();
   const routeState = location.state || {};
+  const { getReportById } = useInterview();
 
-  // Resolve report data safely from props, React Router location state, or your database report
+  const [fetchedReport, setFetchedReport] = useState(null);
+
+  useEffect(() => {
+    const fetchById = async () => {
+      if (params.interviewId && !props.report && !routeState.report) {
+        try {
+          const rep = await getReportById(params.interviewId);
+          if (rep) {
+            setFetchedReport(rep);
+          }
+        } catch (e) {
+          console.error("Could not fetch interview report by ID:", e);
+        }
+      }
+    };
+    fetchById();
+  }, [params.interviewId]);
+
+  // Resolve report data safely from props, React Router location state, fetched report, or database default
   const rawReport =
     props.report ||
     props.interviewReport ||
     props.data ||
     routeState.report ||
     routeState.interviewReport ||
+    fetchedReport ||
     routeState.data ||
     REAL_REPORT;
 
@@ -565,11 +425,20 @@ const Interview = (props) => {
             })}
           </nav>
 
-          {/* Bottom Action: Back to Home */}
-          <div className="absolute bottom-5 left-5 right-5">
+          {/* Bottom Actions */}
+          <div className="absolute bottom-5 left-5 right-5 space-y-2">
+            <Link
+              to="/reports"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-800 bg-[#0f172a] px-3.5 py-2 text-xs font-medium text-slate-300 transition hover:border-violet-500/50 hover:bg-slate-800 hover:text-white"
+            >
+              <svg className="h-4 w-4 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span>My Reports</span>
+            </Link>
             <Link
               to="/"
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-800 bg-[#0f172a] px-3.5 py-2.5 text-xs font-medium text-slate-400 transition hover:border-slate-700 hover:bg-slate-800 hover:text-white"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-800 bg-[#0f172a] px-3.5 py-2 text-xs font-medium text-slate-400 transition hover:border-slate-700 hover:bg-slate-800 hover:text-white"
             >
               <span>←</span>
               <span>New Analysis</span>

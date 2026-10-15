@@ -1,7 +1,8 @@
 
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useRef } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { generateInterviewReportApi } from "../services/interview.api";
+import { useInterview } from "../hooks/useinterview.js";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -9,16 +10,35 @@ const Home = () => {
   const [selfDescription, setSelfDescription] = useState("");
   const [resume, setResume] = useState(null);
   const [loading, setLoading] = useState(false);
+  const resumeInputRef = useRef();
+  const { generateReport } = useInterview();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleGenerateReport = async (e) => {
+    if (e) e.preventDefault();
     setLoading(true);
 
+    const resumeFile = resumeInputRef.current?.files?.[0] || resume;
+
     try {
+      if (generateReport) {
+        const reportData = await generateReport({
+          jobDescription,
+          selfDescription,
+          resumeFile,
+        });
+
+        if (reportData?._id) {
+          navigate(`/interview/${reportData._id}`, {
+            state: { report: reportData },
+          });
+          return;
+        }
+      }
+
       const data = await generateInterviewReportApi({
         jobDescription,
         selfDescription,
-        resume,
+        resume: resumeFile,
       });
 
       if (data?.interviewReport) {
@@ -28,7 +48,7 @@ const Home = () => {
         return;
       }
     } catch (err) {
-      console.error("API error or server offline, navigating to report:", err);
+      console.error("API error, navigating to report:", err);
     } finally {
       setLoading(false);
     }
@@ -40,6 +60,28 @@ const Home = () => {
   return (
     <main className="min-h-screen bg-slate-950 px-4 py-8 text-white sm:px-6 lg:px-10">
       <div className="mx-auto max-w-7xl">
+        {/* Top Navigation Bar */}
+        <div className="mb-8 flex items-center justify-between border-b border-slate-800/80 pb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-600 text-lg font-bold text-white shadow-md shadow-violet-700/30">
+              ⚡
+            </div>
+            <div>
+              <span className="text-base font-bold tracking-tight text-white">Interview</span>
+              <span className="text-base font-bold text-violet-400">AI</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Link
+              to="/reports"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-800 bg-[#0f172a] px-4 py-2 text-xs font-semibold text-slate-300 transition hover:border-violet-500/40 hover:bg-slate-800 hover:text-white"
+            >
+              <span>📁</span>
+              <span>My Reports</span>
+            </Link>
+          </div>
+        </div>
 
         {/* Header */}
         <header className="mb-10">
@@ -59,7 +101,7 @@ const Home = () => {
         </header>
 
         {/* Main Form */}
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleGenerateReport}>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
 
             {/* Left: Job Description */}
@@ -136,7 +178,7 @@ const Home = () => {
                     PDF files only · Maximum 5 MB
                   </span>
 
-                  <input
+                  <input ref={resumeInputRef}
                     type="file"
                     name="resume"
                     id="resume"
@@ -207,6 +249,7 @@ const Home = () => {
           {/* Generate Button */}
           <div className="mt-8 flex flex-col items-center">
             <button
+            onClick={handleGenerateReport}
               type="submit"
               disabled={loading}
               className={`w-full rounded-xl px-8 py-4 text-base font-semibold text-white shadow-lg shadow-violet-950/40 transition sm:w-auto ${

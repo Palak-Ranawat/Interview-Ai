@@ -20,6 +20,21 @@ interviewRouter.post("/",
  * @description get interview report by interviewId.
  * @access private 
  */
-interviewRouter.get("/report/:interviewId",authMiddleware.authUser,interviewController.genrateInterviewReportController);
+interviewRouter.get("/report/:interviewId", authMiddleware.authUser, interviewController.getInterviewReportByIdController);
+/**
+ * @route GET /api/interview/
+ * @description get all interview reports of logged in user.
+ * @access private
+ */
+interviewRouter.get("/", authMiddleware.authUser, interviewController.getAllInterviewReportsController);
+
+/**
+ * @route DELETE /api/interview/:interviewId
+ * @description Delete an interview report by interviewId.
+ * @access private
+ */
+interviewRouter.delete("/:interviewId", authMiddleware.authUser, interviewController.deleteInterviewReportController);
+interviewRouter.delete("/report/:interviewId", authMiddleware.authUser, interviewController.deleteInterviewReportController);
+
 module.exports = interviewRouter;
 
