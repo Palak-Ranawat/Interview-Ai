@@ -2,7 +2,8 @@ import {
     getAllInterviewReports,
     generateInterviewReportApi,
     getAllInterviewReportById,
-    deleteInterviewReportApi
+    deleteInterviewReportApi,
+    generateResumePdf
 } from "../services/interview.api";
 import { useContext } from "react";
 import { InterviewContext } from "../interview.context";
@@ -76,6 +77,28 @@ const useInterview = () => {
         }
     };
 
+    const getResumePdf = async (interviewReportId) => {
+        setLoading(true);
+        try {
+            const response = await generateResumePdf({ interviewReportId });
+            const blob = new Blob([response], { type: "application/pdf" });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", `resume_${interviewReportId}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+            return true;
+        } catch (error) {
+            console.error("Failed to download resume PDF:", error);
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         loading,
         setLoading,
@@ -86,7 +109,8 @@ const useInterview = () => {
         generateReport,
         getReportById,
         getReports,
-        deleteReport
+        deleteReport,
+        getResumePdf
     };
 };
 

@@ -3,22 +3,64 @@ import { useLocation, Link, useParams } from "react-router-dom";
 import useInterview from "../hooks/useinterview";
 
 /**
- * Interview Report Component
- *
- * Modern AI Interview Preparation Dashboard with:
- * - Left sticky navigation sidebar with responsive controls
- * - Center dynamic panel for Dashboard, Technical Qs, Behavioral Qs, Skill Gaps, and Roadmap
- * - Right insights sidebar with circular match score ring, gap distribution, and priorities
+ * Google Gemini Sparkle Star Icon
  */
-// Real interview report data from your database session
+const GeminiIcon = ({ className = "h-4 w-4" }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M12 0C12 6.627 6.627 12 0 12C6.627 12 12 17.373 12 24C12 17.373 17.373 12 24 12C17.373 12 12 6.627 12 0Z"
+      fill="url(#gemini_sparkle_grad)"
+    />
+    <defs>
+      <linearGradient
+        id="gemini_sparkle_grad"
+        x1="2"
+        y1="2"
+        x2="22"
+        y2="22"
+        gradientUnits="userSpaceOnUse"
+      >
+        <stop offset="0%" stopColor="#60A5FA" />
+        <stop offset="50%" stopColor="#A855F7" />
+        <stop offset="100%" stopColor="#EC4899" />
+      </linearGradient>
+    </defs>
+  </svg>
+);
 
 const Interview = (props) => {
   const location = useLocation();
   const params = useParams();
   const routeState = location.state || {};
-  const { getReportById } = useInterview();
+  const { getReportById, getResumePdf } = useInterview();
 
   const [fetchedReport, setFetchedReport] = useState(null);
+  const [downloadingResume, setDownloadingResume] = useState(false);
+  const [downloadError, setDownloadError] = useState(null);
+
+  const handleDownloadResume = async () => {
+    const targetId = report?._id || params?.interviewId;
+    if (!targetId) {
+      alert("Report ID not found. Please view a saved report to download the tailored resume.");
+      return;
+    }
+    try {
+      setDownloadingResume(true);
+      setDownloadError(null);
+      await getResumePdf(targetId);
+    } catch (err) {
+      console.error("Resume download failed:", err);
+      setDownloadError("Failed to generate resume PDF. Please try again.");
+      setTimeout(() => setDownloadError(null), 4000);
+    } finally {
+      setDownloadingResume(false);
+    }
+  };
 
   useEffect(() => {
     const fetchById = async () => {
@@ -427,6 +469,33 @@ const Interview = (props) => {
 
           {/* Bottom Actions */}
           <div className="absolute bottom-5 left-5 right-5 space-y-2">
+            {/* Download Resume with Gemini Icon */}
+            <button
+              type="button"
+              onClick={handleDownloadResume}
+              disabled={downloadingResume}
+              className="group flex w-full items-center justify-center gap-2 rounded-xl border border-violet-500/40 bg-gradient-to-r from-violet-600/25 via-purple-600/25 to-indigo-600/25 px-3 py-2 text-xs font-semibold text-white shadow-md shadow-violet-950/40 backdrop-blur-sm transition-all duration-200 hover:border-violet-400 hover:bg-violet-600/35 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+              title="Download tailored resume PDF generated with Gemini"
+            >
+              {downloadingResume ? (
+                <>
+                  <svg className="h-4 w-4 animate-spin text-violet-300" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  <span>Generating PDF...</span>
+                </>
+              ) : (
+                <>
+                  <GeminiIcon className="h-4 w-4 transition-transform group-hover:scale-110" />
+                  <span>Download Resume</span>
+                  <svg className="h-3 w-3 text-violet-300 transition-transform group-hover:translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                </>
+              )}
+            </button>
+
             <Link
               to="/reports"
               className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-800 bg-[#0f172a] px-3.5 py-2 text-xs font-medium text-slate-300 transition hover:border-violet-500/50 hover:bg-slate-800 hover:text-white"
@@ -455,7 +524,7 @@ const Interview = (props) => {
             <div className="space-y-6">
               {/* Welcome Heading Banner */}
               <div className="rounded-2xl border border-slate-800/80 bg-gradient-to-r from-[#0f172a] via-[#111827] to-[#13112c] p-6 shadow-xl sm:p-8">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 px-3 py-1 text-xs font-semibold text-violet-300">
                       ✨ AI Analysis Complete
@@ -468,13 +537,45 @@ const Interview = (props) => {
                       Review your technical & behavioral questions, bridge skill gaps, and execute the roadmap.
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 sm:flex-col sm:items-end">
-                    <span className="text-3xl font-extrabold text-violet-400 sm:text-4xl">
-                      {matchScore}%
-                    </span>
-                    <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
-                      Match Score
-                    </span>
+                  <div className="flex flex-col items-start gap-3 sm:items-end sm:shrink-0">
+                    <div className="flex items-center gap-2 sm:flex-col sm:items-end">
+                      <span className="text-3xl font-extrabold text-violet-400 sm:text-4xl">
+                        {matchScore}%
+                      </span>
+                      <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                        Match Score
+                      </span>
+                    </div>
+
+                    {/* Prominent Download Resume Button with Gemini Icon */}
+                    <button
+                      type="button"
+                      onClick={handleDownloadResume}
+                      disabled={downloadingResume}
+                      className="group inline-flex items-center gap-2 rounded-xl border border-violet-500/40 bg-gradient-to-r from-violet-600/30 via-indigo-600/30 to-purple-600/30 px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-violet-950/50 backdrop-blur-sm transition-all duration-200 hover:border-violet-400 hover:bg-violet-600/40 hover:shadow-violet-600/30 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+                      title="Download customized resume generated with Gemini"
+                    >
+                      {downloadingResume ? (
+                        <>
+                          <svg className="h-4 w-4 animate-spin text-violet-300" viewBox="0 0 24 24" fill="none">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                          <span>Generating PDF...</span>
+                        </>
+                      ) : (
+                        <>
+                          <GeminiIcon className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
+                          <span>Download Resume</span>
+                          <svg className="h-3.5 w-3.5 text-violet-300 transition-transform duration-200 group-hover:translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                        </>
+                      )}
+                    </button>
+                    {downloadError && (
+                      <span className="text-[11px] text-rose-400">{downloadError}</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1222,6 +1323,43 @@ const Interview = (props) => {
               <p className="mt-2 text-xs text-slate-400">
                 {completedTasksCount} of {totalRoadmapTasks} tasks checked off in this session.
               </p>
+            </div>
+
+            {/* Gemini Tailored Resume Card */}
+            <div className="rounded-2xl border border-violet-500/30 bg-gradient-to-b from-[#151233] to-[#0f172a] p-5 shadow-lg">
+              <div className="flex items-center gap-2">
+                <GeminiIcon className="h-4 w-4" />
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-violet-300">
+                  Gemini Resume
+                </h3>
+              </div>
+              <p className="mt-2 text-xs leading-relaxed text-slate-400">
+                Tailored ATS-optimized resume crafted specifically to match this job description.
+              </p>
+              <button
+                type="button"
+                onClick={handleDownloadResume}
+                disabled={downloadingResume}
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-3.5 py-2.5 text-xs font-semibold text-white shadow-md shadow-violet-900/40 transition hover:bg-violet-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {downloadingResume ? (
+                  <>
+                    <svg className="h-4 w-4 animate-spin text-white" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    <span>Generating PDF...</span>
+                  </>
+                ) : (
+                  <>
+                    <GeminiIcon className="h-4 w-4" />
+                    <span>Download Resume</span>
+                    <svg className="h-3.5 w-3.5 text-violet-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </aside>

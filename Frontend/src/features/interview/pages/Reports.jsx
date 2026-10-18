@@ -3,6 +3,37 @@ import { Link, useNavigate } from "react-router-dom";
 import useInterview from "../hooks/useinterview";
 
 /**
+ * Google Gemini Sparkle Star Icon
+ */
+const GeminiIcon = ({ className = "h-4 w-4" }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M12 0C12 6.627 6.627 12 0 12C6.627 12 12 17.373 12 24C12 17.373 17.373 12 24 12C17.373 12 12 6.627 12 0Z"
+      fill="url(#gemini_sparkle_grad_rep)"
+    />
+    <defs>
+      <linearGradient
+        id="gemini_sparkle_grad_rep"
+        x1="2"
+        y1="2"
+        x2="22"
+        y2="22"
+        gradientUnits="userSpaceOnUse"
+      >
+        <stop offset="0%" stopColor="#60A5FA" />
+        <stop offset="50%" stopColor="#A855F7" />
+        <stop offset="100%" stopColor="#EC4899" />
+      </linearGradient>
+    </defs>
+  </svg>
+);
+
+/**
  * My Reports Dashboard Component
  *
  * Displays all generated interview reports for the authenticated user,
@@ -10,12 +41,25 @@ import useInterview from "../hooks/useinterview";
  */
 const Reports = () => {
   const navigate = useNavigate();
-  const { reports, getReports, deleteReport } = useInterview();
+  const { reports, getReports, deleteReport, getResumePdf } = useInterview();
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [downloadingResumeId, setDownloadingResumeId] = useState(null);
+
+  const handleDownloadResume = async (reportId) => {
+    try {
+      setDownloadingResumeId(reportId);
+      await getResumePdf(reportId);
+    } catch (err) {
+      console.error("Resume download failed:", err);
+      alert("Failed to download resume PDF. Please try again.");
+    } finally {
+      setDownloadingResumeId(null);
+    }
+  };
 
   // Fetch reports on component mount
   const fetchReports = async () => {
@@ -467,8 +511,8 @@ const Reports = () => {
                       </div>
                     </div>
 
-                    {/* Bottom Actions: View & Delete */}
-                    <div className="mt-6 border-t border-slate-800/80 pt-4 flex items-center justify-between gap-3">
+                    {/* Bottom Actions: View, Download Resume & Delete */}
+                    <div className="mt-6 border-t border-slate-800/80 pt-4 flex items-center justify-between gap-2.5">
                       <button
                         type="button"
                         onClick={() =>
@@ -476,10 +520,31 @@ const Reports = () => {
                             state: { report: rep },
                           })
                         }
-                        className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600/15 border border-violet-500/30 px-4 py-2.5 text-xs font-semibold text-violet-300 transition hover:bg-violet-600 hover:text-white"
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-violet-600/15 border border-violet-500/30 px-3.5 py-2.5 text-xs font-semibold text-violet-300 transition hover:bg-violet-600 hover:text-white"
                       >
-                        <span>View Report</span>
+                        <span>View</span>
                         <span>→</span>
+                      </button>
+
+                      {/* Download Resume with Gemini Icon */}
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadResume(rep._id)}
+                        disabled={downloadingResumeId === rep._id}
+                        className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-violet-500/30 bg-[#0a0e1a] px-3 py-2.5 text-xs font-medium text-violet-300 transition hover:border-violet-400 hover:bg-violet-600/20 hover:text-white disabled:opacity-50"
+                        title="Download Tailored Resume (Gemini PDF)"
+                      >
+                        {downloadingResumeId === rep._id ? (
+                          <svg className="h-4 w-4 animate-spin text-violet-400" viewBox="0 0 24 24" fill="none">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                        ) : (
+                          <>
+                            <GeminiIcon className="h-3.5 w-3.5" />
+                            <span>Resume</span>
+                          </>
+                        )}
                       </button>
 
                       {/* Secure Delete with inline confirmation */}
