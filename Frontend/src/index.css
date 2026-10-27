@@ -1,1 +1,660 @@
 @import "tailwindcss";
+
+@theme {
+  --color-midnight-bg: #0B0B0D;
+  --color-midnight-sidebar: #171A21;
+  --color-midnight-card: #1D222B;
+  --color-midnight-input: #141820;
+  --color-midnight-border: #303641;
+  --color-midnight-orange: #FF7A30;
+  --color-midnight-orange-hover: #F06423;
+  --color-midnight-burnt: #FF6A00;
+  --color-midnight-gold: #FFC857;
+  --color-midnight-text: #F8FAFC;
+  --color-midnight-muted: #A1A8B5;
+  --color-midnight-success: #22C55E;
+  --color-midnight-warning: #FFC857;
+  --color-midnight-error: #F87171;
+}
+
+body {
+  background-color: #0B0B0D;
+  color: #F8FAFC;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+/* ========================================================
+   CINEMATIC 3D BACKGROUND STYLING & GPU PIPELINE
+   Perspective, lighting, materials, and geometric meshes
+   ======================================================== */
+
+.three-d-lighting-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* Top-Right primary burnt-orange atmospheric key light */
+.three-d-light-tr {
+  position: absolute;
+  top: -10vw;
+  right: -8vw;
+  width: 55vw;
+  height: 55vw;
+  max-width: 800px;
+  max-height: 800px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(255, 106, 0, 0.16) 0%, rgba(255, 122, 48, 0.05) 45%, transparent 70%);
+  filter: blur(70px);
+  will-change: transform, opacity;
+  animation: floatGlowTR 18s ease-in-out infinite alternate;
+}
+
+/* Bottom-Left secondary burnt-orange fill light */
+.three-d-light-bl {
+  position: absolute;
+  bottom: -12vw;
+  left: -8vw;
+  width: 55vw;
+  height: 55vw;
+  max-width: 750px;
+  max-height: 750px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(255, 106, 0, 0.12) 0%, rgba(255, 200, 87, 0.03) 45%, transparent 72%);
+  filter: blur(75px);
+  will-change: transform, opacity;
+  animation: floatGlowBL 22s ease-in-out infinite alternate;
+}
+
+/* Center-depth subtle warm accent light */
+.three-d-light-center {
+  position: absolute;
+  top: 35%;
+  left: 35%;
+  width: 40vw;
+  height: 40vw;
+  max-width: 550px;
+  max-height: 550px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(255, 106, 0, 0.05) 0%, rgba(255, 200, 87, 0.02) 40%, transparent 70%);
+  filter: blur(80px);
+}
+
+/* Soft cinematic background vignette */
+.three-d-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 35%, transparent 40%, rgba(11, 11, 13, 0.78) 100%);
+  pointer-events: none;
+}
+
+/* 3D Perspective Viewport & Parallax Stage */
+.three-d-viewport {
+  position: absolute;
+  inset: 0;
+  perspective: 1200px;
+  perspective-origin: 50% 45%;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.three-d-stage {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.three-d-item {
+  position: absolute;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* --------------------------------------------------------
+   1. GLOSSY OBSIDIAN SPHERES WITH BURNT-ORANGE RIM GLOW
+   -------------------------------------------------------- */
+
+.obj-hero-sphere {
+  top: 7%;
+  right: 5%;
+  transform: translate3d(0, 0, -50px);
+  animation: floatSphereHero 22s ease-in-out infinite alternate;
+}
+
+.obj-mid-sphere {
+  bottom: 14%;
+  right: 12%;
+  transform: translate3d(0, 0, 60px);
+  animation: floatSphereMid 19s ease-in-out infinite alternate;
+}
+
+.sphere-body {
+  position: relative;
+  border-radius: 9999px;
+  overflow: hidden;
+  will-change: transform;
+}
+
+.glossy-sphere-lg {
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle at 35% 30%, #252B37 0%, #12151C 40%, #07090C 75%, #030405 100%);
+  box-shadow:
+    inset -18px -18px 34px rgba(255, 106, 0, 0.65),
+    inset -6px -6px 14px rgba(255, 200, 87, 0.45),
+    inset 4px 4px 10px rgba(255, 255, 255, 0.25),
+    0 35px 70px rgba(0, 0, 0, 0.85),
+    0 0 35px rgba(255, 106, 0, 0.2);
+}
+
+.glossy-sphere-md {
+  width: 135px;
+  height: 135px;
+  background: radial-gradient(circle at 35% 30%, #202633 0%, #101319 40%, #06080B 80%, #030405 100%);
+  box-shadow:
+    inset -14px -14px 26px rgba(255, 106, 0, 0.6),
+    inset -4px -4px 10px rgba(255, 200, 87, 0.4),
+    inset 3px 3px 8px rgba(255, 255, 255, 0.2),
+    0 25px 50px rgba(0, 0, 0, 0.8),
+    0 0 28px rgba(255, 106, 0, 0.18);
+}
+
+.sphere-specular-glint {
+  position: absolute;
+  top: 16%;
+  left: 22%;
+  width: 44px;
+  height: 28px;
+  border-radius: 50%;
+  transform: rotate(-35deg);
+  background: radial-gradient(ellipse, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.35) 45%, transparent 80%);
+  filter: blur(1.5px);
+  pointer-events: none;
+}
+
+.sphere-rim-orange {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 65%;
+  height: 65%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 85% 85%, rgba(255, 106, 0, 0.45) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.sphere-shadow {
+  position: absolute;
+  width: 180px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.75) 0%, transparent 75%);
+  filter: blur(15px);
+  transform: translate3d(20px, 215px, -70px) rotateX(85deg);
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------
+   2. DUAL METALLIC ORBITAL GYROSCOPE RINGS
+   -------------------------------------------------------- */
+
+.obj-orbital-rings {
+  top: 5%;
+  right: 3%;
+  width: 290px;
+  height: 290px;
+  transform: translate3d(0, 0, -20px);
+}
+
+.orbital-ring-outer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(#0B0B0D, #0B0B0D) padding-box,
+    linear-gradient(135deg, rgba(255, 106, 0, 0.9) 0%, rgba(255, 200, 87, 0.65) 20%, #4B5563 50%, #1E232D 80%, rgba(255, 106, 0, 0.75) 100%) border-box;
+  box-shadow:
+    0 0 25px rgba(255, 106, 0, 0.22),
+    inset 0 0 20px rgba(255, 106, 0, 0.14);
+  transform: rotateX(68deg) rotateY(18deg);
+  animation: spinRingOuter 34s linear infinite;
+}
+
+.orbital-ring-inner {
+  position: absolute;
+  top: 35px;
+  left: 35px;
+  width: 210px;
+  height: 210px;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(#0B0B0D, #0B0B0D) padding-box,
+    linear-gradient(225deg, rgba(255, 106, 0, 0.8) 0%, rgba(255, 200, 87, 0.45) 25%, #374151 55%, rgba(255, 106, 0, 0.65) 100%) border-box;
+  box-shadow: 0 0 18px rgba(255, 106, 0, 0.18);
+  transform: rotateX(42deg) rotateY(-50deg);
+  animation: spinRingInner 26s linear infinite reverse;
+}
+
+.ring-specular {
+  position: absolute;
+  top: 10px;
+  left: 35px;
+  width: 25px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  filter: blur(2px);
+}
+
+/* --------------------------------------------------------
+   3. 3D FACETED QUANTUM CRYSTAL (OCTAHEDRON)
+   -------------------------------------------------------- */
+
+.obj-crystal-octahedron {
+  bottom: 11%;
+  left: 6%;
+  transform: translate3d(0, 0, 40px);
+}
+
+.octahedron-crystal {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  transform-style: preserve-3d;
+  animation: tumbleOctahedron 28s ease-in-out infinite alternate;
+}
+
+.octa-facet {
+  position: absolute;
+  top: 14px;
+  left: 10px;
+  width: 60px;
+  height: 52px;
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  background: linear-gradient(135deg, rgba(32, 38, 50, 0.88) 0%, rgba(14, 17, 24, 0.94) 100%);
+  border-bottom: 1.5px solid rgba(255, 106, 0, 0.65);
+  box-shadow: inset 0 0 12px rgba(255, 106, 0, 0.18);
+  backface-visibility: visible;
+}
+
+/* Upper 4 Facets */
+.facet-top-1 {
+  transform: rotateY(0deg) translateZ(28px) rotateX(32deg);
+}
+.facet-top-2 {
+  transform: rotateY(90deg) translateZ(28px) rotateX(32deg);
+}
+.facet-top-3 {
+  transform: rotateY(180deg) translateZ(28px) rotateX(32deg);
+}
+.facet-top-4 {
+  transform: rotateY(270deg) translateZ(28px) rotateX(32deg);
+}
+
+/* Lower 4 Facets */
+.facet-bot-1 {
+  transform: rotateY(0deg) translateZ(28px) rotateX(-32deg) rotateZ(180deg);
+}
+.facet-bot-2 {
+  transform: rotateY(90deg) translateZ(28px) rotateX(-32deg) rotateZ(180deg);
+}
+.facet-bot-3 {
+  transform: rotateY(180deg) translateZ(28px) rotateX(-32deg) rotateZ(180deg);
+}
+.facet-bot-4 {
+  transform: rotateY(270deg) translateZ(28px) rotateX(-32deg) rotateZ(180deg);
+}
+
+.crystal-glow {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 106, 0, 0.5) 0%, transparent 70%);
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------
+   4. MONOLITHIC SCULPTURAL PRISM
+   -------------------------------------------------------- */
+
+.obj-sculptural-monolith {
+  top: 15%;
+  left: 7%;
+  transform: translate3d(0, 0, -130px) rotateY(-22deg) rotateX(12deg);
+  animation: floatMonolith 24s ease-in-out infinite alternate;
+}
+
+.monolith-body {
+  position: relative;
+  width: 75px;
+  height: 165px;
+  border-radius: 12px;
+  background: linear-gradient(150deg, #1C212C 0%, #101319 40%, #06080B 100%);
+  border: 1px solid rgba(255, 106, 0, 0.35);
+  box-shadow:
+    -10px 14px 35px rgba(0, 0, 0, 0.75),
+    0 0 25px rgba(255, 106, 0, 0.14),
+    inset 1px 1px 1px rgba(255, 200, 87, 0.25);
+  transform-style: preserve-3d;
+}
+
+.monolith-edge-glow {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, transparent 0%, rgba(255, 106, 0, 0.7) 40%, rgba(255, 200, 87, 0.8) 60%, transparent 100%);
+  filter: blur(1px);
+}
+
+/* --------------------------------------------------------
+   5. METALLIC HALO RING
+   -------------------------------------------------------- */
+
+.obj-halo-ring {
+  top: 50%;
+  left: 3%;
+  transform: translate3d(0, 0, -35px);
+}
+
+.halo-ring-body {
+  width: 155px;
+  height: 155px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(#0B0B0D, #0B0B0D) padding-box,
+    linear-gradient(120deg, rgba(255, 106, 0, 0.75) 0%, #475569 35%, rgba(255, 200, 87, 0.55) 75%, #141820 100%) border-box;
+  box-shadow: 0 0 22px rgba(255, 106, 0, 0.16);
+  transform: rotateX(74deg) rotateZ(-30deg);
+  animation: spinHaloRing 32s linear infinite;
+}
+
+/* --------------------------------------------------------
+   6. MINIMALIST 3D MICRO-CUBES
+   -------------------------------------------------------- */
+
+.obj-micro-cube {
+  position: absolute;
+}
+
+.cube-pos-1 {
+  top: 66%;
+  left: 20%;
+  transform: translate3d(0, 0, -140px);
+}
+
+.cube-pos-2 {
+  top: 26%;
+  right: 28%;
+  transform: translate3d(0, 0, -90px);
+}
+
+.cube-pos-3 {
+  bottom: 12%;
+  left: 40%;
+  transform: translate3d(0, 0, -190px);
+}
+
+.micro-cube-mesh {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  transform-style: preserve-3d;
+  animation: tumbleCube 20s linear infinite;
+}
+
+.micro-cube-sm {
+  width: 18px;
+  height: 18px;
+  animation-duration: 25s;
+}
+
+.micro-cube-xs {
+  width: 14px;
+  height: 14px;
+  animation-duration: 30s;
+  animation-direction: reverse;
+}
+
+.cube-face {
+  position: absolute;
+  inset: 0;
+  background: rgba(18, 22, 30, 0.78);
+  border: 1px solid rgba(255, 106, 0, 0.38);
+  box-shadow: inset 0 0 6px rgba(255, 106, 0, 0.12);
+  backface-visibility: visible;
+}
+
+.cube-front  { transform: translateZ(12px); }
+.cube-back   { transform: rotateY(180deg) translateZ(12px); }
+.cube-right  { transform: rotateY(90deg) translateZ(12px); }
+.cube-left   { transform: rotateY(-90deg) translateZ(12px); }
+.cube-top    { transform: rotateX(90deg) translateZ(12px); }
+.cube-bottom { transform: rotateX(-90deg) translateZ(12px); }
+
+.micro-cube-sm .cube-front  { transform: translateZ(9px); }
+.micro-cube-sm .cube-back   { transform: rotateY(180deg) translateZ(9px); }
+.micro-cube-sm .cube-right  { transform: rotateY(90deg) translateZ(9px); }
+.micro-cube-sm .cube-left   { transform: rotateY(-90deg) translateZ(9px); }
+.micro-cube-sm .cube-top    { transform: rotateX(90deg) translateZ(9px); }
+.micro-cube-sm .cube-bottom { transform: rotateX(-90deg) translateZ(9px); }
+
+.micro-cube-xs .cube-front  { transform: translateZ(7px); }
+.micro-cube-xs .cube-back   { transform: rotateY(180deg) translateZ(7px); }
+.micro-cube-xs .cube-right  { transform: rotateY(90deg) translateZ(7px); }
+.micro-cube-xs .cube-left   { transform: rotateY(-90deg) translateZ(7px); }
+.micro-cube-xs .cube-top    { transform: rotateX(90deg) translateZ(7px); }
+.micro-cube-xs .cube-bottom { transform: rotateX(-90deg) translateZ(7px); }
+
+/* --------------------------------------------------------
+   KEYFRAME ANIMATIONS (GPU-accelerated, transform & opacity only)
+   -------------------------------------------------------- */
+
+@keyframes floatSphereHero {
+  0% {
+    transform: translate3d(0, 0, -50px) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(-18px, 22px, -40px) rotate(3deg);
+  }
+  100% {
+    transform: translate3d(14px, -16px, -60px) rotate(-2deg);
+  }
+}
+
+@keyframes floatSphereMid {
+  0% {
+    transform: translate3d(0, 0, 60px);
+  }
+  50% {
+    transform: translate3d(16px, -20px, 75px);
+  }
+  100% {
+    transform: translate3d(-12px, 14px, 50px);
+  }
+}
+
+@keyframes spinRingOuter {
+  0% {
+    transform: rotateX(68deg) rotateY(18deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateX(68deg) rotateY(18deg) rotateZ(360deg);
+  }
+}
+
+@keyframes spinRingInner {
+  0% {
+    transform: rotateX(42deg) rotateY(-50deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateX(42deg) rotateY(-50deg) rotateZ(360deg);
+  }
+}
+
+@keyframes tumbleOctahedron {
+  0% {
+    transform: rotateX(15deg) rotateY(25deg) rotateZ(0deg);
+  }
+  50% {
+    transform: rotateX(55deg) rotateY(145deg) rotateZ(30deg);
+  }
+  100% {
+    transform: rotateX(25deg) rotateY(265deg) rotateZ(10deg);
+  }
+}
+
+@keyframes floatMonolith {
+  0% {
+    transform: translate3d(0, 0, -130px) rotateY(-22deg) rotateX(12deg);
+  }
+  50% {
+    transform: translate3d(12px, 25px, -120px) rotateY(-18deg) rotateX(15deg);
+  }
+  100% {
+    transform: translate3d(-10px, -15px, -140px) rotateY(-26deg) rotateX(10deg);
+  }
+}
+
+@keyframes spinHaloRing {
+  0% {
+    transform: rotateX(74deg) rotateZ(-30deg) rotateY(0deg);
+  }
+  100% {
+    transform: rotateX(74deg) rotateZ(-30deg) rotateY(360deg);
+  }
+}
+
+@keyframes tumbleCube {
+  0% {
+    transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateX(360deg) rotateY(720deg) rotateZ(360deg);
+  }
+}
+
+@keyframes floatGlowTR {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate3d(-30px, 25px, 0) scale(1.06);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(20px, 35px, 0) scale(0.95);
+    opacity: 0.8;
+  }
+}
+
+@keyframes floatGlowBL {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate3d(35px, -30px, 0) scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(-15px, -15px, 0) scale(0.94);
+    opacity: 0.85;
+  }
+}
+
+/* --------------------------------------------------------
+   RESPONSIVE DESIGN (Tablets & Mobile)
+   -------------------------------------------------------- */
+@media (max-width: 1024px) {
+  .glossy-sphere-lg {
+    width: 170px;
+    height: 170px;
+  }
+  .orbital-ring-outer {
+    width: 220px;
+    height: 220px;
+  }
+  .orbital-ring-inner {
+    width: 160px;
+    height: 160px;
+  }
+  .obj-hero-sphere {
+    top: 5%;
+    right: 2%;
+  }
+  .obj-mid-sphere {
+    bottom: 8%;
+    right: 5%;
+  }
+}
+
+@media (max-width: 768px) {
+  .obj-hero-sphere {
+    top: 3%;
+    right: -20px;
+  }
+  .glossy-sphere-lg {
+    width: 130px;
+    height: 130px;
+  }
+  .obj-orbital-rings {
+    display: none;
+  }
+  .obj-crystal-octahedron {
+    bottom: 6%;
+    left: 2%;
+    transform: scale(0.75);
+  }
+  .obj-sculptural-monolith {
+    display: none;
+  }
+  .obj-halo-ring {
+    display: none;
+  }
+  .obj-mid-sphere {
+    bottom: 6%;
+    right: 2%;
+    transform: scale(0.7);
+  }
+  .cube-pos-1, .cube-pos-2, .cube-pos-3 {
+    display: none;
+  }
+}
+
+/* --------------------------------------------------------
+   ACCESSIBILITY: PREFERS REDUCED MOTION
+   -------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .obj-hero-sphere,
+  .obj-mid-sphere,
+  .orbital-ring-outer,
+  .orbital-ring-inner,
+  .octahedron-crystal,
+  .monolith-body,
+  .halo-ring-body,
+  .micro-cube-mesh,
+  .three-d-light-tr,
+  .three-d-light-bl {
+    animation: none !important;
+    transition: none !important;
+  }
+}

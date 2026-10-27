@@ -20,22 +20,34 @@ export async function generateInterviewReportApi({ resume, jobDescription, selfD
   });
   return response.data;
 }
-export async function getAllInterviewReportById  (interviewId){
-  const response = await api.get(`/api/interview/report/${interviewId}`)
-  return response.data
+
+export async function getAllInterviewReportById(interviewId) {
+  const response = await api.get(`/api/interview/report/${interviewId}`);
+  return response.data;
 }
-export async function getAllInterviewReports () {
-  const response = await api.get("/api/interview")
-  return response.data
+
+export async function getAllInterviewReports() {
+  const response = await api.get("/api/interview");
+  return response.data;
 }
 
 export async function deleteInterviewReportApi(interviewId) {
   const response = await api.delete(`/api/interview/${interviewId}`);
   return response.data;
-} 
+}
+
 export const generateResumePdf = async ({ interviewReportId }) => {
-  const response = await api.post(`/api/interview/resume/pdf/${interviewReportId}`, null, {
+  const response = await api.get(`/api/interview/resume/pdf/${interviewReportId}`, {
     responseType: "blob",
   });
   return response.data;
 };
+
+export const generateInterviewReportPdfApi = async ({ interviewReportId }) => {
+  const response = await api.get(`/api/interview/report/pdf/${interviewReportId}`, {
+    responseType: "blob",
+  });
+  return response.data;
+};
+
+export default api;

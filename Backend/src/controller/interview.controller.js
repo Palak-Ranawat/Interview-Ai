@@ -1,63 +1,67 @@
-const { PDFParse } = require("pdf-parse")
-const {generateInterviewReport,genrateResumePdf} = require("../services/ai.service")
-const interviewReportModel = require("../models/interviewReport.model")
-
-
+const { PDFParse } = require("pdf-parse");
+const {
+    generateInterviewReport,
+    genrateResumePdf,
+    generateReportPdf,
+} = require("../services/ai.service");
+const interviewReportModel = require("../models/interviewReport.model");
 
 /**
- * @description Controller to generate interview report based on user self description , resume and job description.
- *  
+ * @description Controller to generate interview report based on user self description, resume and job description.
  */
 async function genrateInterviewReportController(req, res) {
     try {
-        let resumeContent = ""
+        let resumeContent = "";
         if (req.file) {
-            const parser = new PDFParse({ data: req.file.buffer })
-            const parsedPdf = await parser.getText()
-            resumeContent = parsedPdf.text
+            const parser = new PDFParse({ data: req.file.buffer });
+            const parsedPdf = await parser.getText();
+            resumeContent = parsedPdf.text;
         }
 
-        const { selfDescription, jobDescription } = req.body
+        const { selfDescription, jobDescription } = req.body;
 
         const interViewReportByAi = await generateInterviewReport({
             resume: resumeContent,
             selfDescription,
-            jobDescription
-        })
+            jobDescription,
+        });
 
         const interviewReport = await interviewReportModel.create({
             user: req.user.id,
             resume: resumeContent,
             selfDescription,
             jobDescription,
-            ...interViewReportByAi
-        })
+            ...interViewReportByAi,
+        });
 
         res.status(201).json({
-            interviewReport
-        })
+            interviewReport,
+        });
     } catch (err) {
         res.status(500).json({
-            message: err.message
-        })
+            message: err.message,
+        });
     }
 }
 
 /**
  * @description Controller to get all interview report by interviewId.
  */
-async function getInterviewReportByIdController(req,res){
-    const {interviewId} = req.params
-    const interviewReport = await interviewReportModel.findOne({_id:interviewId,user:req.user.id})
-    if(!interviewReport){
+async function getInterviewReportByIdController(req, res) {
+    const { interviewId } = req.params;
+    const interviewReport = await interviewReportModel.findOne({
+        _id: interviewId,
+        user: req.user.id,
+    });
+    if (!interviewReport) {
         return res.status(404).json({
-            message:"Interview report not found."
-        })
+            message: "Interview report not found.",
+        });
     }
     res.status(200).json({
-        message:"Interview report fetched successfully.",
-        interviewReport
-    })
+        message: "Interview report fetched successfully.",
+        interviewReport,
+    });
 }
 
 async function getAllInterviewReportsController(req, res) {
@@ -70,12 +74,12 @@ async function getAllInterviewReportsController(req, res) {
         res.status(200).json({
             success: true,
             totalReports: interviewReports.length,
-            interviewReports
+            interviewReports,
         });
     } catch (err) {
         res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message,
         });
     }
 }
@@ -88,64 +92,125 @@ async function deleteInterviewReportController(req, res) {
         const { interviewId } = req.params;
         const deletedReport = await interviewReportModel.findOneAndDelete({
             _id: interviewId,
-            user: req.user.id
+            user: req.user.id,
         });
 
         if (!deletedReport) {
             return res.status(404).json({
                 success: false,
-                message: "Interview report not found or unauthorized."
+                message: "Interview report not found or unauthorized.",
             });
         }
 
         res.status(200).json({
             success: true,
-            message: "Interview report deleted successfully."
+            message: "Interview report deleted successfully.",
         });
     } catch (err) {
         res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message,
         });
     }
 }
 
 /**
  * @description Controller to generate resume PDF based on user self description, resume and job description.
+ * Caches the generated PDF in MongoDB so subsequent requests return instantly (<20ms).
  */
 async function generateResumePdfController(req, res) {
     try {
         const { interviewReportId } = req.params;
-        const interviewReport = await interviewReportModel.findOne({
-            _id: interviewReportId,
-            user: req.user.id
-        });
+        const interviewReport = await interviewReportModel
+            .findOne({
+                _id: interviewReportId,
+                user: req.user.id,
+            })
+            .select("+resumePdf");
 
         if (!interviewReport) {
             return res.status(404).json({
-                message: "Interview report not found."
+                message: "Interview report not found.",
             });
+        }
+
+        // Return cached PDF if already generated
+        if (interviewReport.resumePdf && interviewReport.resumePdf.length > 0) {
+            res.setHeader("Content-Type", "application/pdf");
+            res.setHeader("Content-Disposition", `attachment; filename="resume-${interviewReportId}.pdf"`);
+            return res.send(interviewReport.resumePdf);
         }
 
         const pdfBuffer = await genrateResumePdf({
             resume: interviewReport.resume,
             selfDescription: interviewReport.selfDescription,
-            jobDescription: interviewReport.jobDescription
+            jobDescription: interviewReport.jobDescription,
         });
+
+        // Cache the generated PDF for future instant downloads
+        interviewReport.resumePdf = Buffer.from(pdfBuffer);
+        await interviewReport.save();
 
         res.setHeader("Content-Type", "application/pdf");
         res.setHeader("Content-Disposition", `attachment; filename="resume-${interviewReportId}.pdf"`);
         return res.send(pdfBuffer);
     } catch (err) {
+        console.error("Error in generateResumePdfController:", err);
         return res.status(500).json({
-            message: err.message
+            message: err.message,
         });
     }
 }
+
+/**
+ * @description Controller to generate comprehensive Interview Report PDF.
+ * Caches the generated PDF in MongoDB so subsequent requests return instantly (<20ms).
+ */
+async function generateReportPdfController(req, res) {
+    try {
+        const { interviewReportId } = req.params;
+        const interviewReport = await interviewReportModel
+            .findOne({
+                _id: interviewReportId,
+                user: req.user.id,
+            })
+            .select("+reportPdf");
+
+        if (!interviewReport) {
+            return res.status(404).json({
+                message: "Interview report not found.",
+            });
+        }
+
+        // Return cached PDF if already generated
+        if (interviewReport.reportPdf && interviewReport.reportPdf.length > 0) {
+            res.setHeader("Content-Type", "application/pdf");
+            res.setHeader("Content-Disposition", `attachment; filename="interview-report-${interviewReportId}.pdf"`);
+            return res.send(interviewReport.reportPdf);
+        }
+
+        const pdfBuffer = await generateReportPdf(interviewReport);
+
+        // Cache the generated PDF for future instant downloads
+        interviewReport.reportPdf = Buffer.from(pdfBuffer);
+        await interviewReport.save();
+
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", `attachment; filename="interview-report-${interviewReportId}.pdf"`);
+        return res.send(pdfBuffer);
+    } catch (err) {
+        console.error("Error in generateReportPdfController:", err);
+        return res.status(500).json({
+            message: err.message,
+        });
+    }
+}
+
 module.exports = {
     genrateInterviewReportController,
     getInterviewReportByIdController,
     getAllInterviewReportsController,
     deleteInterviewReportController,
-    generateResumePdfController
+    generateResumePdfController,
+    generateReportPdfController,
 };

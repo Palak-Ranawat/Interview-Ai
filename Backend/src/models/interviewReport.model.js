@@ -87,9 +87,17 @@ const interviewReportSchema = new mongoose.Schema({
         ref:"users"
     },
     title:{
-   type:String,
-   required:[true,"job title is required"]
-}
+        type:String,
+        required:[true,"job title is required"]
+    },
+    resumePdf:{
+        type:Buffer,
+        select:false
+    },
+    reportPdf:{
+        type:Buffer,
+        select:false
+    }
 },
 {
     timestamps:true
